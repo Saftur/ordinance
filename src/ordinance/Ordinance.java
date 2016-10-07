@@ -16,6 +16,7 @@ public class Ordinance {
 	private long lastFrameTime;
 	private long lastFPSTime;
 	private int fps;
+	//private DisplayMode windowDisplayMode;
 	
 	public void run() {
 		init();
@@ -24,7 +25,9 @@ public class Ordinance {
 	
 	private void init() {
 		try {
-			setDisplayMode(width, height, true);
+			//System.setProperty("org.lwjgl.opengl.Window.undecorated", "true");
+			setDisplayMode(width, height, false);
+			//windowDisplayMode = Display.getDisplayMode();
 			//Display.setDisplayMode(new DisplayMode(width, height));
 			Display.create();
 		} catch (LWJGLException e) {
@@ -75,7 +78,7 @@ public class Ordinance {
 			glTranslatef(x, y, 0);
 			glRotatef(rotation, 0f, 0f, 1f);
 			glTranslatef(-x, -y, 0);
-			glBegin(GL11.GL_QUADS); {
+			glBegin(GL_QUADS); {
 				glVertex2f(x-50, y-50);
 				glVertex2f(x+50, y-50);
 				glVertex2f(x+50, y+50);
@@ -101,43 +104,21 @@ public class Ordinance {
 		
 		while (Keyboard.next()) {
 			if (Keyboard.getEventKeyState()) {
-				switch(Keyboard.getEventKey()) {
-				case Keyboard.KEY_A:
-					System.out.println("A key pressed");
-					break;
-				case Keyboard.KEY_S:
-					System.out.println("S key pressed");
-					break;
-				case Keyboard.KEY_D:
-					System.out.println("D key pressed");
-					break;
-				}
-			} else {
-				switch(Keyboard.getEventKey()) {
-				case Keyboard.KEY_A:
-					System.out.println("A key released");
-					break;
-				case Keyboard.KEY_S:
-					System.out.println("S key released");
-					break;
-				case Keyboard.KEY_D:
-					System.out.println("D key released");
-					break;
+				switch (Keyboard.getEventKey()) {
+				/*case Keyboard.KEY_F:
+					DisplayMode desktop = Display.getDesktopDisplayMode();
+					if (isFullscreen())
+						try {
+							Display.setDisplayMode(windowDisplayMode);
+						} catch (LWJGLException e) {
+							e.printStackTrace();
+						}
+					else
+						setDisplayMode(desktop.getWidth(), desktop.getHeight(), true);
+					break;*/
 				}
 			}
 		}
-	}
-	
-	public long getTime() {
-		return (Sys.getTime()*1000)/Sys.getTimerResolution();
-	}
-	
-	private int getDelta() {
-		long time = getTime();
-		int delta = (int)(time-lastFrameTime);
-		lastFrameTime = time;
-		
-		return delta;
 	}
 	
 	private void updateFPS() {
@@ -195,6 +176,22 @@ public class Ordinance {
 		} catch (LWJGLException e) {
 			System.out.println("Unable to setup mode "+width+"x"+height+" fs="+fullscreen + e);
 		}
+	}
+	
+	public long getTime() {
+		return (Sys.getTime()*1000)/Sys.getTimerResolution();
+	}
+	
+	private int getDelta() {
+		long time = getTime();
+		int delta = (int)(time-lastFrameTime);
+		lastFrameTime = time;
+		
+		return delta;
+	}
+	
+	public boolean isFullscreen() {
+		return Display.isFullscreen();
 	}
 	
 	
