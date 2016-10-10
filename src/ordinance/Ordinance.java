@@ -90,10 +90,10 @@ public class Ordinance {
 		glOrtho(0, width, height, 0, 1, -1);
 		glMatrixMode(GL_MODELVIEW);
 		
-		float playerStats[] = {.5f, 1f, 0.2f};
+		float playerStats[] = {6f, .4f, .3f};
 		player = new Ship("ship", playerStats);
 		map = new Map(mapWidth, mapHeight, player);
-		map.addEntity(player);
+		//map.addEntity(player);
 	}
 	
 	private void loop() {
@@ -102,6 +102,7 @@ public class Ordinance {
 		lastFPSTime = getTime();
 		while (!Display.isCloseRequested()) {
 			delta = getDelta();
+			//System.out.println(delta);
 			
 			update(delta);
 			render(delta);
@@ -140,10 +141,10 @@ public class Ordinance {
 		//if (Keyboard.isKeyDown(Keyboard.KEY_UP)) y -= 0.35f * delta;
 		//if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)) y += 0.35f * delta;
 
-		if (Keyboard.isKeyDown(Keyboard.KEY_LEFT)) player.accel(-(float)delta/1000, 0);
-		if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) player.accel((float)delta/1000, 0);
-		if (Keyboard.isKeyDown(Keyboard.KEY_UP)) player.accel(0, -(float)delta/1000);
-		if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)) player.accel(0, (float)delta/1000);
+		if (Keyboard.isKeyDown(Keyboard.KEY_LEFT)) player.accel(-1, 0, delta);
+		if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) player.accel(1, 0, delta);
+		if (Keyboard.isKeyDown(Keyboard.KEY_UP)) player.accel(0, -1, delta);
+		if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)) player.accel(0, 1, delta);
 		
 		while (Keyboard.next()) {
 			if (Keyboard.getEventKeyState()) {
