@@ -15,34 +15,104 @@ public abstract class Entity {
 	protected static final boolean DECREASE = false;
 	
 	public Texture sprite;
+	public Shape shape;
 	protected Map map;
 	
 	protected float x=0, y=0;
 	protected float xspd=0, yspd=0;
 	protected float lxspd=0, lyspd=0;
 	protected float maxspd, spdinc, spddec;
+	protected float density;
+	
 	
 	/**
-	 * Constructor taking sprite texture and stats
+	 * Defines entity shape
+	 * @author Arthur Bouvier
+	 * @version %I%, %G%
+	 */
+	public enum Shape {
+		RECT,
+		CIRC;
+		
+		private int width = 0;
+		private int height = 0;
+		
+		/**
+		 * Empty constructor
+		 */
+		private Shape() {
+			
+		}
+		
+		/**
+		 * Get shape width
+		 * @return width
+		 */
+		public int getWidth() {
+			return width;
+		}
+		
+		/**
+		 * Get shape height
+		 * @return height
+		 */
+		public int getHeight() {
+			return height;
+		}
+		
+		
+		/**
+		 * Create new rectangle
+		 * @param width	  new rect width
+		 * @param height  new rect height
+		 * @return		  new rect
+		 */
+		public static Shape newRect(int width, int height) {
+			Shape newShape = Shape.RECT;
+			newShape.width = width;
+			newShape.height = height;
+			return newShape;
+		}
+		
+		/**
+		 * Create new circle
+		 * @param diameter	new circ diameter
+		 * @return			new circ
+		 */
+		public static Shape newCirc(int diameter) {
+			Shape newShape = Shape.CIRC;
+			newShape.width = diameter;
+			newShape.height = diameter;
+			return newShape;
+		}
+	}
+	
+	
+	/**
+	 * Constructor taking sprite texture, shape, and stats
 	 * @param sprite  entity texture
+	 * @param shape	  entity shape
 	 * @param stats	  entity stats
 	 */
-	public Entity(Texture sprite, float stats[]) {
+	public Entity(Texture sprite, Shape shape, float stats[]) {
 		this.sprite = sprite;
-		if (stats.length >= 3) {
+		this.shape = shape;
+		if (stats.length >= 4) {
 			this.maxspd = stats[0]*60;
 			this.spdinc = stats[1]*3600;
 			this.spddec = stats[2]*3600;
+			this.density = stats[3];
 		}
 	}
 	
 	/**
-	 * Constructor taking sprite filename and stats
+	 * Constructor taking sprite filename, shape, and stats
 	 * @param spriteFilename  sprite filename
+	 * @param shape			  entity shape
 	 * @param stats			  entity stats
 	 */
-	public Entity(String spriteFilename, float stats[]) {
-		this(Ordinance.loadTexture(spriteFilename), stats);
+	public Entity(String spriteFilename, Shape shape, float stats[]) {
+		this(Ordinance.loadTexture(spriteFilename), shape, stats);
 	}
 	
 	
@@ -154,4 +224,20 @@ public abstract class Entity {
 	public int getHeight() {
 		return sprite.getTextureHeight();
 	}
+	
+	/**
+	 * Get entity mass
+	 * @return area*density
+	 */
+	public float getMass() {
+		switch (shape) {
+		case RECT:
+			return (float)(shape.width*shape.height)*density;
+		case CIRC:
+			return (float)(Math.PI*Math.pow(((float)shape.width/2), 2)*density);
+		default:
+			return 0;
+		}
+	}
+	
 }

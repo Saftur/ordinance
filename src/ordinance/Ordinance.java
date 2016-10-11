@@ -7,6 +7,7 @@ import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 import org.newdawn.slick.util.ResourceLoader;
 
+import ordinance.entity.Entity.Shape;
 import ordinance.entity.Ship;
 
 import org.lwjgl.input.*;
@@ -47,7 +48,7 @@ public class Ordinance {
 			System.exit(0);
 		}
 		
-		try {
+		/*try {
 			Controllers.create();
 			int numGamepads = Controllers.getControllerCount();
 			System.out.println("Number of gamepads = "+numGamepads);
@@ -67,7 +68,7 @@ public class Ordinance {
 			}
 		} catch (LWJGLException e) {
 			e.printStackTrace();
-		}
+		}*/
 		
 		glEnable(GL_TEXTURE_2D);
 		
@@ -84,8 +85,10 @@ public class Ordinance {
 		glOrtho(0, width, height, 0, 1, -1);
 		glMatrixMode(GL_MODELVIEW);
 		
-		float playerStats[] = {6f, .4f, .3f};
-		player = new Ship("ship", playerStats);
+		float playerStats[] = {6f, .4f, .3f, 1f};
+		Shape playerShape = Shape.newCirc(64);
+		player = new Ship("ship", playerShape, playerStats);
+		System.out.println(player.getMass());
 		map = new Map(mapWidth, mapHeight, player);
 		//map.addEntity(player);
 	}

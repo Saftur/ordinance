@@ -3,11 +3,11 @@ package ordinance.entity;
 import org.newdawn.slick.opengl.Texture;
 
 /**
- * Ship class
+ * Planet class
  * @author Arthur Bouvier
  * @version %I%, %G%
  */
-public class Ship extends Entity {
+public class Planet extends Entity {
 	
 	/**
 	 * Constructor taking sprite texture, shape, and stats
@@ -15,7 +15,7 @@ public class Ship extends Entity {
 	 * @param shape	  entity shape
 	 * @param stats	  entity stats
 	 */
-	public Ship(Texture sprite, Shape shape, float stats[]) {
+	public Planet(Texture sprite, Shape shape, float[] stats) {
 		super(sprite, shape, stats);
 	}
 	
@@ -25,7 +25,7 @@ public class Ship extends Entity {
 	 * @param shape			  entity shape
 	 * @param stats			  entity stats
 	 */
-	public Ship(String spriteFilename, Shape shape, float stats[]) {
+	public Planet(String spriteFilename, Shape shape, float[] stats) {
 		super(spriteFilename, shape, stats);
 	}
 	

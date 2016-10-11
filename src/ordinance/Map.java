@@ -12,6 +12,8 @@ import ordinance.entity.Ship;
  * @version %I%, %G%
  */
 public class Map {
+	public static final double GRAVITY = .00000000006674;
+	
 	public int width, height;
 	public List<Entity> ents;
 	private Ship player;
@@ -63,4 +65,5 @@ public class Map {
 		newEnt.setMap(this);
 		return newEnt;
 	}
+	
 }
