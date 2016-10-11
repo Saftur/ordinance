@@ -15,38 +15,32 @@ import static org.lwjgl.opengl.GL11.*;
 
 import java.io.IOException;
 
+/**
+ * Ordinance game
+ * @author Arthur Bouvier
+ * @version %I%, %G%
+ */
 public class Ordinance {
 	public static Ordinance app;
 	
 	public Map map;
+	private Ship player;
+	private Controller gamepad;
 	
 	public int width=800, height=600;
 	public int mapWidth=800, mapHeight=600;
-	//public float x=width/2, y=height/2;
-	//public float rotation = 0;
-	public int mx=0, my=0;
+	public int mouseX=0, mouseY=0;
 	private long lastFrameTime;
-	private long lastFPSTime;
-	private int fps;
+	private long nextFPSTime;
+	private int fpsCount;
+	private int delta;
 	
-	private Ship player;
-	//private DisplayMode windowDisplayMode;
-	//private Texture texture;
-	private Controller gamepad;
-	
-	public void run() {
-		init();
-		loop();
-	}
-	
+	/**
+	 * Initiate the game
+	 */
 	private void init() {
 		try {
-			//System.setProperty("org.lwjgl.opengl.Window.undecorated", "true");
-			//System.setProperty("org.lwjgl.opengl.Display.enableHighDPI", "true");
 			setDisplayMode(width, height, false);
-			//windowDisplayMode = Display.getDisplayMode();
-			//Display.setDisplayMode(new DisplayMode(width, height));
-			//Display.setFullscreen(true);
 			Display.create();
 		} catch (LWJGLException e) {
 			e.printStackTrace();
@@ -96,16 +90,18 @@ public class Ordinance {
 		//map.addEntity(player);
 	}
 	
+	/**
+	 * Main game loop
+	 */
 	private void loop() {
-		int delta;
 		getDelta();
-		lastFPSTime = getTime();
+		nextFPSTime = getTime();
 		while (!Display.isCloseRequested()) {
 			delta = getDelta();
 			//System.out.println(delta);
 			
-			update(delta);
-			render(delta);
+			update();
+			render();
 			updateFPS();
 			
 			Display.update();
@@ -115,8 +111,11 @@ public class Ordinance {
 		Display.destroy();
 	}
 	
-	private void update(int delta) {
-		pollInput(delta);
+	/**
+	 * Update the world
+	 */
+	private void update() {
+		pollInput();
 		/*rotation += 0.15f * delta;
 		if (x<0) x=0;
 		if (x+texture.getTextureWidth()>=width) x=width-1-texture.getTextureWidth();
@@ -125,21 +124,12 @@ public class Ordinance {
 		map.update(delta);
 	}
 	
-	private void pollInput(int delta) {
-		mx = Mouse.getX();
-		my = height-Mouse.getY()-1;
-		//System.out.println(mx+", "+my);
-		
-		/*if (Mouse.isButtonDown(0)) {
-			//System.out.println("Mouse down: "+mx+", "+my);
-			x=mx-texture.getTextureWidth()/2;
-			y=my-texture.getTextureHeight()/2;
-		}*/
-		
-		//if (Keyboard.isKeyDown(Keyboard.KEY_LEFT)) x -= 0.35f * delta;
-		//if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) x += 0.35f * delta;
-		//if (Keyboard.isKeyDown(Keyboard.KEY_UP)) y -= 0.35f * delta;
-		//if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)) y += 0.35f * delta;
+	/**
+	 * Poll input from devices
+	 */
+	private void pollInput() {
+		mouseX = Mouse.getX();
+		mouseY = height-Mouse.getY()-1;
 
 		if (Keyboard.isKeyDown(Keyboard.KEY_LEFT)) player.accel(-1, 0, delta);
 		if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) player.accel(1, 0, delta);
@@ -149,17 +139,6 @@ public class Ordinance {
 		while (Keyboard.next()) {
 			if (Keyboard.getEventKeyState()) {
 				switch (Keyboard.getEventKey()) {
-				/*case Keyboard.KEY_F:
-					DisplayMode desktop = Display.getDesktopDisplayMode();
-					if (isFullscreen())
-						try {
-							Display.setDisplayMode(windowDisplayMode);
-						} catch (LWJGLException e) {
-							e.printStackTrace();
-						}
-					else
-						setDisplayMode(desktop.getWidth(), desktop.getHeight(), true);
-					break;*/
 				case Keyboard.KEY_ESCAPE:
 					System.exit(0);
 				}
@@ -167,62 +146,66 @@ public class Ordinance {
 		}
 	}
 	
-	private void render(int delta) {
+	/**
+	 * Render the world
+	 */
+	private void render() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-		/*glColor3f(0.5f, 0.5f, 1.0f);
-		
-		glPushMatrix(); {
-			glTranslatef(x, y, 0);
-			glRotatef(rotation, 0f, 0f, 1f);
-			glTranslatef(-x, -y, 0);
-			glBegin(GL_QUADS); {
-				glVertex2f(x-50, y-50);
-				glVertex2f(x+50, y-50);
-				glVertex2f(x+50, y+50);
-				glVertex2f(x-50, y+50);
-			} glEnd();
-		} glPopMatrix();*/
-		/*Color.white.bind();
-		texture.bind();
-		
-		glBegin(GL_QUADS); {
-			glTexCoord2f(0,0);
-			glVertex2f(x,y);
-			glTexCoord2f(1,0);
-			glVertex2f(x+texture.getTextureWidth(),y);
-			glTexCoord2f(1,1);
-			glVertex2f(x+texture.getTextureWidth(),y+texture.getTextureHeight());
-			glTexCoord2f(0,1);
-			glVertex2f(x,y+texture.getTextureHeight());
-		} glEnd();*/
 		
 		map.render();
 	}
 	
-	public void drawSprite(Texture sprite, float x, float y) {
-		glBegin(GL_QUADS); {
-			glTexCoord2f(0,0);
-			glVertex2f(x,y);
-			glTexCoord2f(1,0);
-			glVertex2f(x+sprite.getTextureWidth(),y);
-			glTexCoord2f(1,1);
-			glVertex2f(x+sprite.getTextureWidth(),y+sprite.getTextureHeight());
-			glTexCoord2f(0,1);
-			glVertex2f(x,y+sprite.getTextureHeight());
-		} glEnd();
-	}
 	
+	/**
+	 * Check FPS and updates title
+	 */
 	private void updateFPS() {
-		if (getTime() - lastFPSTime > 1000) {
-			Display.setTitle("FPS: "+fps);
-			fps = 0;
-			lastFPSTime+=1000;
+		if (getTime() - nextFPSTime > 1000) {
+			Display.setTitle("FPS: "+fpsCount);
+			fpsCount = 0;
+			nextFPSTime+=1000;
 		}
-		fps++;
+		fpsCount++;
 	}
 	
-	public void setDisplayMode(int width, int height, boolean fullscreen) {
+	
+	/**
+	 * Get current program time
+	 * @return current time in ms
+	 */
+	public long getTime() {
+		return (Sys.getTime()*1000)/Sys.getTimerResolution();
+	}
+	
+	/**
+	 * Get delta time since last call
+	 * @return delta time in ms
+	 */
+	private int getDelta() {
+		long time = getTime();
+		int delta = (int)(time-lastFrameTime);
+		lastFrameTime = time;
+		
+		return delta;
+	}
+	
+	
+	/**
+	 * Set width/height
+	 * @param width	  new width
+	 * @param height  new height
+	 */
+	public static void setDisplayMode(int width, int height) {
+		setDisplayMode(width, height, Display.isFullscreen());
+	}
+	
+	/**
+	 * Set width/height and fullscreen or not
+	 * @param width		  new width
+	 * @param height	  new height
+	 * @param fullscreen  fullscreen or not
+	 */
+	public static void setDisplayMode(int width, int height, boolean fullscreen) {
 		if (Display.getDisplayMode().getWidth() == width &&
 			Display.getDisplayMode().getHeight() == height &&
 			Display.isFullscreen() == fullscreen) {
@@ -270,23 +253,11 @@ public class Ordinance {
 		}
 	}
 	
-	public long getTime() {
-		return (Sys.getTime()*1000)/Sys.getTimerResolution();
-	}
-	
-	private int getDelta() {
-		long time = getTime();
-		int delta = (int)(time-lastFrameTime);
-		lastFrameTime = time;
-		
-		return delta;
-	}
-	
-	public boolean isFullscreen() {
-		return Display.isFullscreen();
-	}
-	
-	
+	/**
+	 * Loads a PNG file and returns resulting texture
+	 * @param filename	name of png file
+	 * @return			new texture
+	 */
 	public static Texture loadTexture(String filename) {
 		Texture texture = null;
 		try {
@@ -298,9 +269,34 @@ public class Ordinance {
 		}
 		return texture;
 	}
+
+	/**
+	 * Draw a sprite at specified coordinates
+	 * @param sprite  texture to be rendered
+	 * @param x		  x coordinate
+	 * @param y		  y coordinate
+	 */
+	public static void renderSprite(Texture sprite, float x, float y) {
+		glBegin(GL_QUADS); {
+			glTexCoord2f(0,0);
+			glVertex2f(x,y);
+			glTexCoord2f(1,0);
+			glVertex2f(x+sprite.getTextureWidth(),y);
+			glTexCoord2f(1,1);
+			glVertex2f(x+sprite.getTextureWidth(),y+sprite.getTextureHeight());
+			glTexCoord2f(0,1);
+			glVertex2f(x,y+sprite.getTextureHeight());
+		} glEnd();
+	}
 	
-	
+	/**
+	 * Main function
+	 * @param args	command line arguments
+	 */
 	public static void main(String[] args) {
-		(app = new Ordinance()).run();
+		System.out.println("Ordinance V0.0.5");
+		app = new Ordinance();
+		app.init();
+		app.loop();
 	}
 }
