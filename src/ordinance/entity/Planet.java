@@ -5,7 +5,6 @@ import org.newdawn.slick.opengl.Texture;
 /**
  * Planet class
  * @author Arthur Bouvier
- * @version %I%, %G%
  */
 public class Planet extends Entity {
 	

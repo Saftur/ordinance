@@ -9,7 +9,6 @@ import ordinance.entity.Ship;
 /**
  * Holds information about the map and contains entities
  * @author Arthur Bouvier
- * @version %I%, %G%
  */
 public class Map {
 	public static final double GRAVITY = .00000000006674;

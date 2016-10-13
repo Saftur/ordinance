@@ -2,10 +2,11 @@ package ordinance.entity;
 
 import org.newdawn.slick.opengl.Texture;
 
+import ordinance.Map;
+
 /**
  * Ship class
  * @author Arthur Bouvier
- * @version %I%, %G%
  */
 public class Ship extends Entity {
 	
@@ -29,4 +30,24 @@ public class Ship extends Entity {
 		super(spriteFilename, shape, stats);
 	}
 	
+	
+	public void update(int delta) {
+		super.update(delta);
+		
+		for (Entity ent : map.ents) {
+			if (ent != this) {
+				if (ent instanceof Planet) {
+					float dist = distanceTo(ent)/20;
+					//System.out.println(dist);
+					float force = (float)(Map.GRAVITY*getMass()*ent.getMass()/Math.pow(dist, 2));
+					System.out.println(force);
+					if (force > .0000001) {
+						float accel = force/getMass()*1000000000*10;
+						//System.out.println(accel);
+						accelDir(accel/spdinc, angleTo(ent)+rot, delta);
+					}
+				}
+			}
+		}
+	}
 }

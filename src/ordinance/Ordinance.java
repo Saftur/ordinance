@@ -2,12 +2,13 @@ package ordinance;
 
 import org.lwjgl.*;
 import org.lwjgl.opengl.*;
-import org.newdawn.slick.Color;
+//import org.newdawn.slick.Color;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 import org.newdawn.slick.util.ResourceLoader;
 
 import ordinance.entity.Entity.Shape;
+import ordinance.entity.Planet;
 import ordinance.entity.Ship;
 
 import org.lwjgl.input.*;
@@ -19,17 +20,16 @@ import java.io.IOException;
 /**
  * Ordinance game
  * @author Arthur Bouvier
- * @version %I%, %G%
  */
 public class Ordinance {
 	public static Ordinance app;
 	
 	public Map map;
 	private Ship player;
-	private Controller gamepad;
+	//private Controller gamepad;
 	
-	public int width=800, height=600;
-	public int mapWidth=800, mapHeight=600;
+	public int width=1600, height=1200;
+	public int mapWidth=1600, mapHeight=1200;
 	public int mouseX=0, mouseY=0;
 	private long lastFrameTime;
 	private long nextFPSTime;
@@ -78,18 +78,21 @@ public class Ordinance {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		
 		glViewport(0,0,width,height);
-		glMatrixMode(GL_MODELVIEW);
+		//glMatrixMode(GL_MODELVIEW);
 		
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glOrtho(0, width, height, 0, 1, -1);
 		glMatrixMode(GL_MODELVIEW);
 		
-		float playerStats[] = {6f, .4f, .3f, 1f};
+		float playerStats[] = {6f, .4f, .3f};
 		Shape playerShape = Shape.newCirc(64);
 		player = new Ship("ship", playerShape, playerStats);
+		Planet planet = new Planet("../player", playerShape, playerStats);
+		planet.moveTo(width/2-32, height/2-32);
 		System.out.println(player.getMass());
 		map = new Map(mapWidth, mapHeight, player);
+		map.addEntity(planet);
 		//map.addEntity(player);
 	}
 	
@@ -119,11 +122,7 @@ public class Ordinance {
 	 */
 	private void update() {
 		pollInput();
-		/*rotation += 0.15f * delta;
-		if (x<0) x=0;
-		if (x+texture.getTextureWidth()>=width) x=width-1-texture.getTextureWidth();
-		if (y<0) y=0;
-		if (y+texture.getTextureHeight()>=height) y=height-1-texture.getTextureHeight();*/
+		//player.accelDir(1, 45, delta);
 		map.update(delta);
 	}
 	
@@ -280,6 +279,7 @@ public class Ordinance {
 	 * @param y		  y coordinate
 	 */
 	public static void renderSprite(Texture sprite, float x, float y) {
+		glBindTexture(GL_TEXTURE_2D, sprite.getTextureID());
 		glBegin(GL_QUADS); {
 			glTexCoord2f(0,0);
 			glVertex2f(x,y);
@@ -297,7 +297,7 @@ public class Ordinance {
 	 * @param args	command line arguments
 	 */
 	public static void main(String[] args) {
-		System.out.println("Ordinance V0.0.5");
+		System.out.println("Ordinance V0.0.8");
 		app = new Ordinance();
 		app.init();
 		app.loop();
