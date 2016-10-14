@@ -137,7 +137,10 @@ public class Ordinance {
 		if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) player.accel(1, 0, delta);
 		if (Keyboard.isKeyDown(Keyboard.KEY_UP)) player.accel(0, -1, delta);
 		if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)) player.accel(0, 1, delta);
-		
+		if (Keyboard.isKeyDown(Keyboard.KEY_R)){ //ease of testing, can be taken out later
+			Display.destroy();
+			init();
+		}
 		while (Keyboard.next()) {
 			if (Keyboard.getEventKeyState()) {
 				switch (Keyboard.getEventKey()) {
