@@ -5,28 +5,15 @@ import org.newdawn.slick.opengl.Texture;
 import ordinance.Map;
 
 /**
- * Ship class
- * @author Arthur Bouvier
+ * Bullet class
+ * @author Brandon Yue
  */
-public class Ship extends Entity {
-	public int hitPoints = 100;
-	/**
-	 * Constructor taking sprite texture, shape, and stats
-	 * @param sprite  entity texture
-	 * @param shape	  entity shape
-	 * @param stats	  entity stats
-	 */
-	public Ship(Texture sprite, Shape shape, float stats[]) {
+public class Bullet extends Entity {
+	public int damage = 10;
+	public Bullet(Texture sprite, Shape shape, float stats[]) {
 		super(sprite, shape, stats);
 	}
-	
-	/**
-	 * Constructor taking sprite filename, shape, and stats
-	 * @param spriteFilename  sprite filename
-	 * @param shape			  entity shape
-	 * @param stats			  entity stats
-	 */
-	public Ship(String spriteFilename, Shape shape, float stats[]) {
+	public Bullet(String spriteFilename, Shape shape, float stats[]) {
 		super(spriteFilename, shape, stats);
 	}
 	
@@ -46,8 +33,9 @@ public class Ship extends Entity {
 						//System.out.println(accel);
 						accelDir(accel/spdinc, angleTo(ent)+rot, delta);
 					}
-				}
+				} 
 			}
 		}
+		//should bullets be affected by gravity? Seems like a weird concept
 	}
 }
