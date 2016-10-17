@@ -181,7 +181,7 @@ public abstract class Entity {
 	 * Update entity
 	 * @param delta delta time in ms
 	 */
-	public void update(int delta) {
+	public boolean update(int delta) {
 		float sDelta = (float)delta/1000;
 		if (DECREASE) {
 			if (xspd == lxspd && xspd != 0) {
@@ -232,6 +232,7 @@ public abstract class Entity {
 			}
 		}
 		lxspd = xspd; lyspd = yspd;
+		return true;
 	}
 	
 	/**
@@ -372,6 +373,10 @@ public abstract class Entity {
 	 */
 	public int getHeight() {
 		return sprite.getTextureHeight();
+	}
+	
+	public float getLongestSize() {
+		return (float)(Math.sqrt(Math.pow(getWidth(), 2)+Math.pow(getHeight(), 2))/2);
 	}
 	
 	/**

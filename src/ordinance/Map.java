@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ordinance.entity.Entity;
+import ordinance.entity.Player;
 import ordinance.entity.Ship;
 
 /**
@@ -36,10 +37,33 @@ public class Map {
 	 * Update the map and entities
 	 * @param delta	 delta time in ms
 	 */
-	public void update(int delta) {
-		for (Entity ent : ents) {
-			ent.update(delta);
+	public int update(int delta) {
+		int i=0;
+		while (i < ents.size()) {
+			Entity ent = ents.get(i);
+			if (!(ent instanceof Player) && !ent.update(delta))
+				removeEntity(ent);
+			else i++;
 		}
+		if (!player.update(delta)) return 1;
+		
+		/*boolean collide;
+		do {
+			collide = false;
+			i=0;
+			while (i < ents.size()) {
+				Entity ent1 = ents.get(i);
+				int e=i+1;
+				while (e < ents.size()) {
+					Entity ent2 = ents.get(e);
+					if (ent1.distanceTo(ent2)-ent1.getLongestSize()-ent2.getLongestSize() < 0) {
+						
+					}
+				}
+			}
+		} while (collide);*/
+		
+		return 0;
 	}
 	
 	/**
@@ -63,6 +87,17 @@ public class Map {
 		ents.add(newEnt);
 		newEnt.setMap(this);
 		return newEnt;
+	}
+
+	/**
+	 * Removes entity from the map
+	 * @param remEnt  ent to remove
+	 * @return		  the removed entity
+	 */
+	public Entity removeEntity(Entity remEnt) {
+		ents.remove(remEnt);
+		remEnt.setMap(null);
+		return remEnt;
 	}
 	
 }

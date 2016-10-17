@@ -9,7 +9,9 @@ import org.newdawn.slick.util.ResourceLoader;
 
 import ordinance.entity.Entity.Shape;
 import ordinance.entity.Planet;
+import ordinance.entity.Player;
 import ordinance.entity.Ship;
+import ordinance.screen.Screen;
 
 import org.lwjgl.input.*;
 
@@ -20,10 +22,12 @@ import java.io.IOException;
 /**
  * Ordinance game
  * @author Arthur Bouvier
+ * @author Brandon Yue
  */
 public class Ordinance {
 	public static Ordinance app;
 	
+	public Screen screen;
 	public Map map;
 	private Ship player;
 	//private Controller gamepad;
@@ -87,7 +91,7 @@ public class Ordinance {
 		
 		float playerStats[] = {6f, .4f, .3f};
 		Shape playerShape = Shape.newCirc(64);
-		player = new Ship("ship", playerShape, playerStats);
+		player = new Player("ship", playerShape, playerStats);
 		Planet planet = new Planet("../player", playerShape, playerStats);
 		planet.moveTo(width/2-32, height/2-32);
 		System.out.println(player.getMass());
@@ -137,13 +141,14 @@ public class Ordinance {
 		if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) player.accel(1, 0, delta);
 		if (Keyboard.isKeyDown(Keyboard.KEY_UP)) player.accel(0, -1, delta);
 		if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)) player.accel(0, 1, delta);
-		if (Keyboard.isKeyDown(Keyboard.KEY_R)){ //ease of testing, can be taken out later
-			Display.destroy();
-			init();
-		}
+		
 		while (Keyboard.next()) {
 			if (Keyboard.getEventKeyState()) {
 				switch (Keyboard.getEventKey()) {
+				case Keyboard.KEY_R: //ease of testing, can be taken out later
+					Display.destroy();
+					init();
+					break;
 				case Keyboard.KEY_ESCAPE:
 					System.exit(0);
 				}

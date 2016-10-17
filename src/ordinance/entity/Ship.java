@@ -31,7 +31,7 @@ public class Ship extends Entity {
 	}
 	
 	
-	public void update(int delta) {
+	public boolean update(int delta) {
 		super.update(delta);
 		
 		for (Entity ent : map.ents) {
@@ -49,5 +49,6 @@ public class Ship extends Entity {
 				}
 			}
 		}
+		return true;
 	}
 }
