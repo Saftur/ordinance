@@ -19,11 +19,14 @@ public abstract class Entity {
 	protected Map map;
 	
 	protected float x=0, y=0;
+	protected int cx=0, cy=0;
 	protected float xspd=0, yspd=0;
-	protected float rot=0;
+	public float rot=0;
 	protected float lxspd=0, lyspd=0;
 	protected float maxspd, spdinc, spddec;
-	protected float density;
+	protected int life=0;
+	protected boolean gravity=false;
+	public float density=1f;
 	
 	
 	/**
@@ -91,7 +94,7 @@ public abstract class Entity {
 	 * Calculates xspd and yspd for a direction
 	 * @author Arthur Bouvier
 	 */
-	private static class SpeedDir {
+	protected static class SpeedDir {
 		private static float xspd=0, yspd=0;
 		
 		/**
@@ -153,17 +156,16 @@ public abstract class Entity {
 	 * @param shape	  entity shape
 	 * @param stats	  entity stats
 	 */
-	public Entity(Texture sprite, Shape shape, float stats[]) {
+	public Entity(Texture sprite, Shape shape, float stats[], int cx, int cy) {
 		this.sprite = sprite;
 		this.shape = shape;
-		if (stats.length >= 3) {
+		if (stats != null && stats.length > 2) {
 			this.maxspd = stats[0]*60;
 			this.spdinc = stats[1]*3600;
 			this.spddec = stats[2]*3600;
-			if (stats.length >= 4)
-				this.density = stats[3];
-			else this.density = 1f;
 		}
+		this.cx = cx;
+		this.cy = cy;
 	}
 	
 	/**
@@ -172,8 +174,8 @@ public abstract class Entity {
 	 * @param shape			  entity shape
 	 * @param stats			  entity stats
 	 */
-	public Entity(String spriteFilename, Shape shape, float stats[]) {
-		this(Ordinance.loadTexture(spriteFilename), shape, stats);
+	public Entity(String spriteFilename, Shape shape, float stats[], int cx, int cy) {
+		this(Ordinance.loadTexture(spriteFilename), shape, stats, cx, cy);
 	}
 	
 	
@@ -203,35 +205,32 @@ public abstract class Entity {
 		if (yspd<-maxspd) yspd = -maxspd;
 		x+=sDelta*xspd;
 		y+=sDelta*yspd;
-		if (x<0) {
-			x=0;
-			if (xspd<0) {
-				if (REBOUND) xspd=-xspd*.8f;
-				else xspd=0;
-			}
-		}
-		if (x+getWidth()>=map.width) {
-			x=map.width-getWidth();
-			if (xspd>0) {
-				if (REBOUND) xspd=-xspd*.8f;
-				else xspd=0;
-			}
-		}
-		if (y<0) {
-			y=0;
-			if (yspd<0) {
-				if (REBOUND) yspd=-yspd*.8f;
-				else yspd=0;
-			}
-		}
-		if (y+getHeight()>=map.height) {
-			y=map.height-getHeight();
-			if (yspd>0) {
-				if (REBOUND) yspd=-yspd*.8f;
-				else yspd=0;
-			}
-		}
 		lxspd = xspd; lyspd = yspd;
+		
+		if (gravity) {
+			for (Entity ent : map.ents) {
+				if (ent != this) {
+					if (ent instanceof Planet) {
+						float dist = distanceTo(ent)/20;
+						//System.out.println(dist);
+						float force = (float)(Map.GRAVITY*getMass()*ent.getMass()/Math.pow(dist, 2));
+						//System.out.println(force);
+						if (force > .0000001) {
+							float accel = force/getMass()*1000000000*10;
+							//System.out.println(accel);
+							accelDir(accel/spdinc, angleTo(ent)+rot, delta);
+						}
+					}
+				}
+			}
+		}
+		
+		if (life > 0) {
+			life--;
+			if (life <= 0)
+				return false;
+		}
+		
 		return true;
 	}
 	
@@ -243,6 +242,14 @@ public abstract class Entity {
 	public void moveTo(float x, float y) {
 		this.x = x;
 		this.y = y;
+	}
+	
+	public void moveDir(float spd, float dir) {
+		if (map != null) {
+			SpeedDir.setSpdDir(spd, dir);
+			x+=SpeedDir.getXspd();
+			y+=SpeedDir.getYspd();
+		}
 	}
 	
 	/**
@@ -288,13 +295,73 @@ public abstract class Entity {
 		while (rot >= 360) rot -= 360;
 		while (rot < 0) rot += 360;
 	}
-
+	
+	public boolean mapEdges() {
+		if (this instanceof Ship) {
+			Ship self = (Ship)this;
+			if (x-cx<0) {
+				x=cx;
+				if (xspd<0) {
+					if (REBOUND) xspd=-xspd*.8f;
+					else xspd=0;
+				}
+				if (self.weapons.size() > 0)
+					self.weapons.get(self.wpn).updatePos();
+				return true;
+			}
+			if (x-cx+getWidth()>=map.width) {
+				x=map.width-getWidth()+cx;
+				if (xspd>0) {
+					if (REBOUND) xspd=-xspd*.8f;
+					else xspd=0;
+				}
+				if (self.weapons.size() > 0)
+					self.weapons.get(self.wpn).updatePos();
+				return true;
+			}
+			if (y-cy<0) {
+				y=cy;
+				if (yspd<0) {
+					if (REBOUND) yspd=-yspd*.8f;
+					else yspd=0;
+				}
+				if (self.weapons.size() > 0)
+					self.weapons.get(self.wpn).updatePos();
+				return true;
+			}
+			if (y-cy+getHeight()>=map.height) {
+				y=map.height-getHeight()+cy;
+				if (yspd>0) {
+					if (REBOUND) yspd=-yspd*.8f;
+					else yspd=0;
+				}
+				if (self.weapons.size() > 0)
+					self.weapons.get(self.wpn).updatePos();
+				return true;
+			}
+		} else if (this instanceof Bullet) {
+			if (x+getLongestSize() < 0 || x-getLongestSize() >= map.width || y+getLongestSize() < 0 || y-getLongestSize() >= map.height) {
+				map.removeEntity(this);
+				//return true;
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * Set containing map
 	 * @param map  containing map
 	 */
 	public void setMap(Map map) {
 		this.map = map;
+	}
+	
+	public void enableGravity(boolean enable) {
+		gravity = enable;
+	}
+	
+	public void render() {
+		Ordinance.renderSprite(sprite, x-cx, y-cy);
 	}
 	
 	
@@ -375,6 +442,25 @@ public abstract class Entity {
 		return sprite.getTextureHeight();
 	}
 	
+	public int getEdge(int e) {
+		switch (e) {
+		case 0:
+			return getWidth()-cx;
+		case 1:
+			return getHeight()-cy;
+		case 2:
+			return cx;
+		case 3:
+			return cy;
+		default:
+			return 0;
+		}
+	}
+	
+	/**
+	 * Gets the longest size needed to test collisions
+	 * @return longest size
+	 */
 	public float getLongestSize() {
 		return (float)(Math.sqrt(Math.pow(getWidth(), 2)+Math.pow(getHeight(), 2))/2);
 	}
@@ -391,6 +477,71 @@ public abstract class Entity {
 			return (float)(Math.PI*Math.pow(((float)shape.width/2), 2)*density*SCALE);
 		default:
 			return 0;
+		}
+	}
+	
+	public boolean collide(Entity other) {
+		if (this.shape == Shape.CIRC) {
+			if (other.shape == Shape.CIRC)
+				return distanceTo(other)-(getEdge(0)+other.getEdge(0)) < 0;
+			else if (other.shape == Shape.RECT)
+				return collideCircRect(this, other);
+		} else if (this.shape == Shape.RECT) {
+			if (other.shape == Shape.CIRC)
+				return collideCircRect(other, this);
+		}
+		return false;
+	}
+	
+	
+	public static boolean collideCircRect(Entity circ, Entity rect) {
+		float d1=0, d2=0;
+		float angle = rect.angleTo(circ);
+		while (angle < 0) angle += 360;
+		float dist = rect.distanceTo(circ);
+		
+		int quad = 0;
+		while (angle >= 90) {
+			angle -= 90;
+			quad++;
+		}
+		if (angle == 0) {
+			switch (quad) {
+			case 0: d1 = dist; d2 = 0; break;
+			case 1: d1 = 0; d2 = dist; break;
+			case 2: d1 = -dist; d2 = 0; break;
+			case 3: d1 = 0; d2 = -dist; break;
+			}
+		} else {
+			d1 = (float)(Math.cos(angle*Math.PI/180)*dist);
+			d2 = (float)(Math.sin(angle*Math.PI/180)*dist);
+			float oldD1 = d1;
+			switch (quad) {
+			case 0: break;
+			case 1: d1 = -d2; d2 = oldD1; break;
+			case 2: d1 = -d1; d2 = -d2; break;
+			case 3: d1 = d2; d2 = -oldD1; break;
+			}
+		}
+		
+		float e1 = rect.getEdge(0), e2 = rect.getEdge(1);
+		float e3 = rect.getEdge(2), e4 = rect.getEdge(3);
+		float ec = circ.getEdge(0);
+		if (d1 <= e1 && d1 >= -e3) {
+			if (d2 > e2) return d2-(ec+e2) < 0;
+			else if (d2 < -e4) return -d2-(ec+e4) < 0;
+			else return true;
+		} else if (d2 <= e2 && d2 >= -e4) {
+			if (d1 > e1) return d1-(ec+e1) < 0;
+			else if (d1 < -e3) return -d1-(ec+e3) < 0;
+			else return true;
+		} else {
+			float a=0, b=0;
+			if (d1 > e1) a = d1-e1;
+			else if (d1 < -e3) a = -d1-e3;
+			if (d2 > e2) b = d2-e2;
+			else if (d2 < -e4) b = -d2-e4;
+			return Math.sqrt(Math.pow(a,2)+Math.pow(b,2))-ec < 0;
 		}
 	}
 	

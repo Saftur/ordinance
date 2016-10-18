@@ -4,11 +4,8 @@ import org.newdawn.slick.opengl.Texture;
 
 import ordinance.Ordinance;
 
-/**
- * Planet class
- * @author Arthur Bouvier
- */
-public class Planet extends Entity {
+public class Enemy extends Ship {
+	public float dmg;
 	
 	/**
 	 * Constructor taking sprite texture, shape, and stats
@@ -16,8 +13,13 @@ public class Planet extends Entity {
 	 * @param shape	  entity shape
 	 * @param stats	  entity stats
 	 */
-	public Planet(Texture sprite, Shape shape, float[] stats, int cx, int cy) {
+	public Enemy(Texture sprite, Shape shape, float stats[], int cx, int cy) {
 		super(sprite, shape, stats, cx, cy);
+		if (stats != null) {
+			dmg = stats[4];
+		} else {
+			dmg = 0;
+		}
 	}
 	
 	/**
@@ -26,7 +28,7 @@ public class Planet extends Entity {
 	 * @param shape			  entity shape
 	 * @param stats			  entity stats
 	 */
-	public Planet(String spriteFilename, Shape shape, float[] stats, int cx, int cy) {
+	public Enemy(String spriteFilename, Shape shape, float stats[], int cx, int cy) {
 		this(Ordinance.loadTexture(spriteFilename), shape, stats, cx, cy);
 	}
 	

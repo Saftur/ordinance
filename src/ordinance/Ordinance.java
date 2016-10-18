@@ -89,13 +89,15 @@ public class Ordinance {
 		glOrtho(0, width, height, 0, 1, -1);
 		glMatrixMode(GL_MODELVIEW);
 		
-		float playerStats[] = {6f, .4f, .3f};
+		float playerStats[] = {6f, .4f, .3f, 100};
+		float planetStats[] = {6f, .4f, .3f};
 		Shape playerShape = Shape.newCirc(64);
-		player = new Player("ship", playerShape, playerStats);
-		Planet planet = new Planet("../player", playerShape, playerStats);
-		planet.moveTo(width/2-32, height/2-32);
+		player = new Player("ship", "../player", playerShape, playerStats, 32, 32);
+		Planet planet = new Planet("planet1", playerShape, planetStats, 32, 32);
+		//planet.moveTo(width/2-32, height/2-32);
 		System.out.println(player.getMass());
 		map = new Map(mapWidth, mapHeight, player);
+		player.moveTo(0, 0);
 		map.addEntity(planet);
 		//map.addEntity(player);
 	}

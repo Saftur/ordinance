@@ -2,40 +2,80 @@ package ordinance.entity;
 
 import org.newdawn.slick.opengl.Texture;
 
-import ordinance.Map;
+import ordinance.Ordinance;
 
 /**
  * Bullet class
  * @author Brandon Yue
  */
 public class Bullet extends Entity {
-	public int damage = 10;
-	public Bullet(Texture sprite, Shape shape, float stats[]) {
-		super(sprite, shape, stats);
-	}
-	public Bullet(String spriteFilename, Shape shape, float stats[]) {
-		super(spriteFilename, shape, stats);
-	}
+	public Weapon weapon;
 	
+	public float dmg;
+	public float cxspd, cyspd;
 	
-	public void update(int delta) {
-		super.update(delta);
-		
-		for (Entity ent : map.ents) {
-			if (ent != this) {
-				if (ent instanceof Planet) {
-					float dist = distanceTo(ent)/20;
-					//System.out.println(dist);
-					float force = (float)(Map.GRAVITY*getMass()*ent.getMass()/Math.pow(dist, 2));
-					System.out.println(force);
-					if (force > .0000001) {
-						float accel = force/getMass()*1000000000*10;
-						//System.out.println(accel);
-						accelDir(accel/spdinc, angleTo(ent)+rot, delta);
-					}
-				} 
-			}
+	/**
+	 * Constructor taking sprite texture, shape, and stats
+	 * @param sprite  entity texture
+	 * @param shape	  entity shape
+	 * @param stats	  entity stats
+	 */
+	public Bullet(Texture sprite, Shape shape, float stats[], int cx, int cy) {
+		super(sprite, shape, null, cx, cy);
+		if (stats != null) {
+			dmg = stats[0];
+			life = (int)stats[1];
+		} else {
+			dmg = 0;
 		}
-		//should bullets be affected by gravity? Seems like a weird concept
+		enableGravity(true);
 	}
+
+	/**
+	 * Constructor taking sprite texture, shape, and stats
+	 * @param sprite  entity texture
+	 * @param shape	  entity shape
+	 * @param stats	  entity stats
+	 */
+	public Bullet(String spriteFilename, Shape shape, float stats[], int cx, int cy) {
+		this(Ordinance.loadTexture(spriteFilename), shape, stats, cx, cy);
+	}
+	
+
+	/**
+	 * Update entity
+	 * @param delta delta time in ms
+	 */
+	public boolean update(int delta) {
+		//super.update(delta);
+		x += cxspd; y += cyspd;
+		return super.update(delta);
+	}
+	
+	public Bullet shoot(float spd, float dir) {
+		rot = dir;
+		SpeedDir.setSpdDir(spd, dir);
+		cxspd = SpeedDir.getXspd();
+		cyspd = SpeedDir.getYspd();
+		return this;
+	}
+	
+	
+	/**
+	 * Check if bullet comes from a player
+	 * @return bullet from player or not
+	 */
+	public boolean fromPlayer() {
+		if (weapon != null && weapon.owner != null)
+			return weapon.owner instanceof Player;
+		else return false;
+	}
+	
+	public Bullet copy() {
+		float stats[] = {dmg, life};
+		Bullet newBullet = new Bullet(sprite, shape, stats, cx, cy);
+		newBullet.weapon = weapon;
+		return newBullet;
+	}
+	
 }
