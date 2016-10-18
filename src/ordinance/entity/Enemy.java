@@ -13,8 +13,8 @@ public class Enemy extends Ship {
 	 * @param shape	  entity shape
 	 * @param stats	  entity stats
 	 */
-	public Enemy(Texture sprite, Shape shape, float stats[], int cx, int cy) {
-		super(sprite, shape, stats, cx, cy);
+	public Enemy(Texture sprite, Shape shape, int width, int height, float stats[], int cx, int cy) {
+		super(sprite, shape, width, height, stats, cx, cy);
 		if (stats != null) {
 			dmg = stats[4];
 		} else {
@@ -28,8 +28,8 @@ public class Enemy extends Ship {
 	 * @param shape			  entity shape
 	 * @param stats			  entity stats
 	 */
-	public Enemy(String spriteFilename, Shape shape, float stats[], int cx, int cy) {
-		this(Ordinance.loadTexture(spriteFilename), shape, stats, cx, cy);
+	public Enemy(String spriteFilename, Shape shape, int width, int height, float stats[], int cx, int cy) {
+		this(Ordinance.loadTexture(spriteFilename), shape, width, height, stats, cx, cy);
 	}
 	
 }

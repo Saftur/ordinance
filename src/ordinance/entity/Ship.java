@@ -24,8 +24,8 @@ public class Ship extends Entity {
 	 * @param shape	  entity shape
 	 * @param stats	  entity stats
 	 */
-	public Ship(Texture sprite, Shape shape, float stats[], int cx, int cy) {
-		super(sprite, shape, stats, cx, cy);
+	public Ship(Texture sprite, Shape shape, int width, int height, float stats[], int cx, int cy) {
+		super(sprite, shape, width, height, stats, cx, cy);
 		
 		if (stats != null && stats.length > 3) {
 			hp = stats[3];
@@ -44,8 +44,8 @@ public class Ship extends Entity {
 	 * @param shape			  entity shape
 	 * @param stats			  entity stats
 	 */
-	public Ship(String spriteFilename, Shape shape, float stats[], int cx, int cy) {
-		this(Ordinance.loadTexture(spriteFilename), shape, stats, cx, cy);
+	public Ship(String spriteFilename, Shape shape, int width, int height, float stats[], int cx, int cy) {
+		this(Ordinance.loadTexture(spriteFilename), shape, width, height, stats, cx, cy);
 	}
 	
 

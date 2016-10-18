@@ -1,8 +1,13 @@
 package ordinance;
 
+import java.io.IOException;
+
+//import com.ivan.xinput.XInputDevice;
+//import com.ivan.xinput.XInputDevice14;
+
 import org.lwjgl.*;
+import org.lwjgl.input.*;
 import org.lwjgl.opengl.*;
-//import org.newdawn.slick.Color;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 import org.newdawn.slick.util.ResourceLoader;
@@ -13,11 +18,8 @@ import ordinance.entity.Player;
 import ordinance.entity.Ship;
 import ordinance.screen.Screen;
 
-import org.lwjgl.input.*;
-
 import static org.lwjgl.opengl.GL11.*;
 
-import java.io.IOException;
 
 /**
  * Ordinance game
@@ -74,6 +76,14 @@ public class Ordinance {
 			e.printStackTrace();
 		}*/
 		
+		/*if (XInputDevice.isAvailable()) {
+			System.out.println("XInput 1.3 is available on this platform.");
+		}
+		
+		if (XInputDevice14.isAvailable()) {
+			System.out.println("XInput 1.4 is available on this platform.");
+		}*/
+		
 		glEnable(GL_TEXTURE_2D);
 		
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -91,9 +101,10 @@ public class Ordinance {
 		
 		float playerStats[] = {6f, .4f, .3f, 100};
 		float planetStats[] = {6f, .4f, .3f};
-		Shape playerShape = Shape.newCirc(64);
-		player = new Player("ship", "../player", playerShape, playerStats, 32, 32);
-		Planet planet = new Planet("planet1", playerShape, planetStats, 32, 32);
+		player = new Player("ship", "../player", Shape.CIRC, 64, 64, playerStats, 32, 32);
+		System.out.println(player.getWidth());
+		Planet planet = new Planet("planet1", Shape.CIRC, 64, 64, planetStats, 32, 32);
+		System.out.println(player.getWidth());
 		//planet.moveTo(width/2-32, height/2-32);
 		System.out.println(player.getMass());
 		map = new Map(mapWidth, mapHeight, player);
@@ -281,24 +292,30 @@ public class Ordinance {
 		}
 		return texture;
 	}
-
+	
+	public static void renderSprite(Texture sprite, float x, float y) {
+		renderSprite(sprite, x, y, sprite.getTextureWidth(), sprite.getTextureHeight());
+	}
+	
 	/**
 	 * Draw a sprite at specified coordinates
 	 * @param sprite  texture to be rendered
 	 * @param x		  x coordinate
 	 * @param y		  y coordinate
+	 * @param width	  sprite width
+	 * @param height  sprite height
 	 */
-	public static void renderSprite(Texture sprite, float x, float y) {
+	public static void renderSprite(Texture sprite, float x, float y, float width, float height) {
 		glBindTexture(GL_TEXTURE_2D, sprite.getTextureID());
 		glBegin(GL_QUADS); {
 			glTexCoord2f(0,0);
 			glVertex2f(x,y);
 			glTexCoord2f(1,0);
-			glVertex2f(x+sprite.getTextureWidth(),y);
+			glVertex2f(x+width,y);
 			glTexCoord2f(1,1);
-			glVertex2f(x+sprite.getTextureWidth(),y+sprite.getTextureHeight());
+			glVertex2f(x+width,y+height);
 			glTexCoord2f(0,1);
-			glVertex2f(x,y+sprite.getTextureHeight());
+			glVertex2f(x,y+height);
 		} glEnd();
 	}
 	

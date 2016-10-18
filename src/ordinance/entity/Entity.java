@@ -18,6 +18,7 @@ public abstract class Entity {
 	public Shape shape;
 	protected Map map;
 	
+	protected int width, height;
 	protected float x=0, y=0;
 	protected int cx=0, cy=0;
 	protected float xspd=0, yspd=0;
@@ -36,58 +37,6 @@ public abstract class Entity {
 	public static enum Shape {
 		RECT,
 		CIRC;
-		
-		private int width = 0;
-		private int height = 0;
-		
-		/**
-		 * Empty constructor
-		 */
-		private Shape() {
-			
-		}
-		
-		/**
-		 * Get shape width
-		 * @return width
-		 */
-		public int getWidth() {
-			return width;
-		}
-		
-		/**
-		 * Get shape height
-		 * @return height
-		 */
-		public int getHeight() {
-			return height;
-		}
-		
-		
-		/**
-		 * Create new rectangle
-		 * @param width	  new rect width
-		 * @param height  new rect height
-		 * @return		  new rect
-		 */
-		public static Shape newRect(int width, int height) {
-			Shape newShape = Shape.RECT;
-			newShape.width = width;
-			newShape.height = height;
-			return newShape;
-		}
-		
-		/**
-		 * Create new circle
-		 * @param diameter	new circ diameter
-		 * @return			new circ
-		 */
-		public static Shape newCirc(int diameter) {
-			Shape newShape = Shape.CIRC;
-			newShape.width = diameter;
-			newShape.height = diameter;
-			return newShape;
-		}
 	}
 	
 	/**
@@ -156,9 +105,11 @@ public abstract class Entity {
 	 * @param shape	  entity shape
 	 * @param stats	  entity stats
 	 */
-	public Entity(Texture sprite, Shape shape, float stats[], int cx, int cy) {
+	public Entity(Texture sprite, Shape shape, int width, int height, float stats[], int cx, int cy) {
 		this.sprite = sprite;
 		this.shape = shape;
+		this.width = width;
+		this.height = height;
 		if (stats != null && stats.length > 2) {
 			this.maxspd = stats[0]*60;
 			this.spdinc = stats[1]*3600;
@@ -174,8 +125,8 @@ public abstract class Entity {
 	 * @param shape			  entity shape
 	 * @param stats			  entity stats
 	 */
-	public Entity(String spriteFilename, Shape shape, float stats[], int cx, int cy) {
-		this(Ordinance.loadTexture(spriteFilename), shape, stats, cx, cy);
+	public Entity(String spriteFilename, Shape shape, int width, int height, float stats[], int cx, int cy) {
+		this(Ordinance.loadTexture(spriteFilename), shape, width, height, stats, cx, cy);
 	}
 	
 	
@@ -215,8 +166,8 @@ public abstract class Entity {
 						//System.out.println(dist);
 						float force = (float)(Map.GRAVITY*getMass()*ent.getMass()/Math.pow(dist, 2));
 						//System.out.println(force);
-						if (force > .0000001) {
-							float accel = force/getMass()*1000000000*10;
+						if (force > .00000001) {
+							float accel = force/getMass()*1000000000*15;
 							//System.out.println(accel);
 							accelDir(accel/spdinc, angleTo(ent)+rot, delta);
 						}
@@ -309,7 +260,7 @@ public abstract class Entity {
 					self.weapons.get(self.wpn).updatePos();
 				return true;
 			}
-			if (x-cx+getWidth()>=map.width) {
+			if (x-cx+getWidth()>map.width) {
 				x=map.width-getWidth()+cx;
 				if (xspd>0) {
 					if (REBOUND) xspd=-xspd*.8f;
@@ -329,7 +280,7 @@ public abstract class Entity {
 					self.weapons.get(self.wpn).updatePos();
 				return true;
 			}
-			if (y-cy+getHeight()>=map.height) {
+			if (y-cy+getHeight()>map.height) {
 				y=map.height-getHeight()+cy;
 				if (yspd>0) {
 					if (REBOUND) yspd=-yspd*.8f;
@@ -361,7 +312,7 @@ public abstract class Entity {
 	}
 	
 	public void render() {
-		Ordinance.renderSprite(sprite, x-cx, y-cy);
+		Ordinance.renderSprite(sprite, x-cx, y-cy, getWidth(), getHeight());
 	}
 	
 	
@@ -431,7 +382,8 @@ public abstract class Entity {
 	 * @return sprite width
 	 */
 	public int getWidth() {
-		return sprite.getTextureWidth();
+		return width;
+		//return sprite.getTextureWidth();
 	}
 	
 	/**
@@ -439,7 +391,8 @@ public abstract class Entity {
 	 * @return sprite height
 	 */
 	public int getHeight() {
-		return sprite.getTextureHeight();
+		return height;
+		//return sprite.getTextureHeight();
 	}
 	
 	public int getEdge(int e) {
@@ -472,9 +425,9 @@ public abstract class Entity {
 	public float getMass() {
 		switch (shape) {
 		case RECT:
-			return (float)(shape.width*shape.height)*density*SCALE;
+			return (float)(width*height)*density*SCALE;
 		case CIRC:
-			return (float)(Math.PI*Math.pow(((float)shape.width/2), 2)*density*SCALE);
+			return (float)(Math.PI*Math.pow(((float)width/2), 2)*density*SCALE);
 		default:
 			return 0;
 		}

@@ -20,8 +20,8 @@ public class Bullet extends Entity {
 	 * @param shape	  entity shape
 	 * @param stats	  entity stats
 	 */
-	public Bullet(Texture sprite, Shape shape, float stats[], int cx, int cy) {
-		super(sprite, shape, null, cx, cy);
+	public Bullet(Texture sprite, Shape shape, int width, int height, float stats[], int cx, int cy) {
+		super(sprite, shape, width, height, null, cx, cy);
 		if (stats != null) {
 			dmg = stats[0];
 			life = (int)stats[1];
@@ -37,8 +37,8 @@ public class Bullet extends Entity {
 	 * @param shape	  entity shape
 	 * @param stats	  entity stats
 	 */
-	public Bullet(String spriteFilename, Shape shape, float stats[], int cx, int cy) {
-		this(Ordinance.loadTexture(spriteFilename), shape, stats, cx, cy);
+	public Bullet(String spriteFilename, Shape shape, int width, int height, float stats[], int cx, int cy) {
+		this(Ordinance.loadTexture(spriteFilename), shape, width, height, stats, cx, cy);
 	}
 	
 
@@ -73,7 +73,7 @@ public class Bullet extends Entity {
 	
 	public Bullet copy() {
 		float stats[] = {dmg, life};
-		Bullet newBullet = new Bullet(sprite, shape, stats, cx, cy);
+		Bullet newBullet = new Bullet(sprite, shape, width, height, stats, cx, cy);
 		newBullet.weapon = weapon;
 		return newBullet;
 	}

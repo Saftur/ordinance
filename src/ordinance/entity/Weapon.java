@@ -22,8 +22,8 @@ public class Weapon extends Entity {
 	 * @param shape	  entity shape
 	 * @param stats	  entity stats
 	 */
-	public Weapon(Texture sprite, Shape shape, Bullet bullet, float stats[], int cx, int cy) {
-		super(sprite, shape, null, cx, cy);
+	public Weapon(Texture sprite, Shape shape, int width, int height, Bullet bullet, float stats[], int cx, int cy) {
+		super(sprite, shape, width, height, null, cx, cy);
 		
 		this.bullet = bullet;
 		bullet.weapon = this;
@@ -45,8 +45,8 @@ public class Weapon extends Entity {
 	 * @param shape	  entity shape
 	 * @param stats	  entity stats
 	 */
-	public Weapon(String spriteFilename, Shape shape, Bullet bullet, float stats[], int cx, int cy) {
-		this(Ordinance.loadTexture(spriteFilename), shape, bullet, stats, cx, cy);
+	public Weapon(String spriteFilename, Shape shape, int width, int height, Bullet bullet, float stats[], int cx, int cy) {
+		this(Ordinance.loadTexture(spriteFilename), shape, width, height, bullet, stats, cx, cy);
 	}
 	
 	

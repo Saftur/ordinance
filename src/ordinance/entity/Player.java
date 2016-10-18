@@ -16,8 +16,8 @@ public class Player extends Ship {
 	 * @param shape	  entity shape
 	 * @param stats	  entity stats
 	 */
-	public Player(Texture sprite, Texture invSprite, Shape shape, float stats[], int cx, int cy) {
-		super(sprite, shape, stats, cx, cy);
+	public Player(Texture sprite, Texture invSprite, Shape shape, int width, int height, float stats[], int cx, int cy) {
+		super(sprite, shape, width, height, stats, cx, cy);
 		if (stats != null && stats.length > 4) {
 			invper = (int)stats[4];
 		} else {
@@ -34,10 +34,10 @@ public class Player extends Ship {
 	 * @param shape			  entity shape
 	 * @param stats			  entity stats
 	 */
-	public Player(String spriteFilename, String invSpriteFilename, Shape shape, float stats[], int cx, int cy) {
+	public Player(String spriteFilename, String invSpriteFilename, Shape shape, int width, int height, float stats[], int cx, int cy) {
 		this(Ordinance.loadTexture(spriteFilename),
 			 Ordinance.loadTexture(invSpriteFilename),
-			 shape, stats, cx, cy);
+			 shape, width, height, stats, cx, cy);
 	}
 	
 	

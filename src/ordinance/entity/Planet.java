@@ -16,8 +16,8 @@ public class Planet extends Entity {
 	 * @param shape	  entity shape
 	 * @param stats	  entity stats
 	 */
-	public Planet(Texture sprite, Shape shape, float[] stats, int cx, int cy) {
-		super(sprite, shape, stats, cx, cy);
+	public Planet(Texture sprite, Shape shape, int width, int height, float[] stats, int cx, int cy) {
+		super(sprite, shape, width, height, stats, cx, cy);
 	}
 	
 	/**
@@ -26,8 +26,8 @@ public class Planet extends Entity {
 	 * @param shape			  entity shape
 	 * @param stats			  entity stats
 	 */
-	public Planet(String spriteFilename, Shape shape, float[] stats, int cx, int cy) {
-		this(Ordinance.loadTexture(spriteFilename), shape, stats, cx, cy);
+	public Planet(String spriteFilename, Shape shape, int width, int height, float[] stats, int cx, int cy) {
+		this(Ordinance.loadTexture(spriteFilename), shape, width, height, stats, cx, cy);
 	}
 	
 }
