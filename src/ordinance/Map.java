@@ -92,7 +92,7 @@ public class Map {
 								}
 							} else if (ent2 instanceof Planet) {
 								if (ent1.collide(ent2)) {
-									System.out.println("Collide");
+									//System.out.println("Collide");
 									//return 1;
 								}
 							}
@@ -103,7 +103,7 @@ public class Map {
 								}
 							} else if (ent2 instanceof Ship) {
 								if (ent1.collide(ent2)) {
-									System.out.println("Collide");
+									//System.out.println("Collide");
 									//return 1;
 								}
 							}

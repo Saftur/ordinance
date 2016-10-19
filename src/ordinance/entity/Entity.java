@@ -43,7 +43,7 @@ public abstract class Entity {
 	 * Calculates xspd and yspd for a direction
 	 * @author Arthur Bouvier
 	 */
-	protected static class SpeedDir {
+	public static class SpeedDir {
 		private static float xspd=0, yspd=0;
 		
 		/**
@@ -212,6 +212,46 @@ public abstract class Entity {
 	public void accel(float sclx, float scly, int delta) {
 		xspd+=(float)delta/1000*sclx*spdinc;
 		yspd+=(float)delta/1000*scly*spdinc;
+	}
+
+	/**
+	 * Accelerate in sclx/scly direction
+	 * @param sclx	   x speed scale
+	 * @param scly	   y speed scale
+	 * @param maxXSpd  max xspd
+	 * @param maxYSpd  max yspd
+	 * @param delta	   delta time in ms
+	 */
+	public void accel(float sclx, float scly, float maxXSpd, float maxYSpd, int delta) {
+		float dxspd = (float)delta/1000*sclx*spdinc;
+		float dyspd = (float)delta/1000*scly*spdinc;
+		maxXSpd *= maxspd;
+		maxYSpd *= maxspd;
+		if (dxspd < 0) {
+			dxspd = -dxspd;
+			maxXSpd = -maxXSpd;
+		}
+		if (dyspd < 0) {
+			dyspd = -dyspd;
+			maxYSpd = -maxYSpd;
+		}
+		
+		if (xspd < maxXSpd) {
+			xspd+=dxspd;
+		}
+		if (xspd > maxXSpd) {
+			xspd-=dxspd;
+			if (xspd < maxXSpd)
+				xspd = maxXSpd;
+		}
+		if (yspd < maxYSpd) {
+			yspd+=dyspd;
+		}
+		if (yspd > maxYSpd) {
+			yspd-=dyspd;
+			if (yspd < maxYSpd)
+				yspd = maxYSpd;
+		}
 	}
 	
 	/**

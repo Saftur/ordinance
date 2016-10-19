@@ -2,8 +2,11 @@ package ordinance;
 
 import java.io.IOException;
 
-//import com.ivan.xinput.XInputDevice;
-//import com.ivan.xinput.XInputDevice14;
+import com.ivan.xinput.*;
+import com.ivan.xinput.enums.XInputAxis;
+import com.ivan.xinput.enums.XInputButton;
+import com.ivan.xinput.listener.SimpleXInputDeviceListener;
+import com.ivan.xinput.listener.XInputDeviceListener;
 
 import org.lwjgl.*;
 import org.lwjgl.input.*;
@@ -12,6 +15,7 @@ import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 import org.newdawn.slick.util.ResourceLoader;
 
+import ordinance.entity.Entity;
 import ordinance.entity.Entity.Shape;
 import ordinance.entity.Planet;
 import ordinance.entity.Player;
@@ -28,10 +32,14 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class Ordinance {
 	public static Ordinance app;
+	private static final double THRESHOLD_STICK_ROT = 0.2;
 	
 	public Screen screen;
 	public Map map;
 	private Ship player;
+	private Gamepad gamepad = null;
+	//private XInputDevice gamepad = null;
+	//private XInputComponents gamepadComps = null;
 	//private Controller gamepad;
 	
 	public int width=1600, height=1200;
@@ -76,13 +84,40 @@ public class Ordinance {
 			e.printStackTrace();
 		}*/
 		
-		/*if (XInputDevice.isAvailable()) {
+		if (XInputDevice.isAvailable()) {
 			System.out.println("XInput 1.3 is available on this platform.");
 		}
 		
 		if (XInputDevice14.isAvailable()) {
 			System.out.println("XInput 1.4 is available on this platform.");
-		}*/
+		}
+		
+		try {
+			XInputDevice[] devices = XInputDevice.getAllDevices();
+			
+			System.out.println(devices[0].isConnected());
+			
+			gamepad = new Gamepad(devices[0]);
+			
+			XInputDeviceListener listener = new SimpleXInputDeviceListener() {
+				@Override
+				public void connected() {
+					System.out.println("Connected");
+				}
+				@Override
+				public void disconnected() {
+					System.out.println("Disconnected");
+				}
+				@Override
+				public void buttonChanged(final XInputButton button, final boolean pressed) {
+					//System.out.println("Button");
+				}
+			};
+			
+			gamepad.addListener(listener);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		glEnable(GL_TEXTURE_2D);
 		
@@ -99,14 +134,13 @@ public class Ordinance {
 		glOrtho(0, width, height, 0, 1, -1);
 		glMatrixMode(GL_MODELVIEW);
 		
-		float playerStats[] = {6f, .4f, .3f, 100};
-		float planetStats[] = {6f, .4f, .3f};
+		//					  {maxspd, spdinc, spddec,  hp}
+		float playerStats[] = {    6f,    .4f,    .3f, 100};
+		float planetStats[] = {    6f,    .4f,    .3f};
 		player = new Player("ship", "../player", Shape.CIRC, 64, 64, playerStats, 32, 32);
-		System.out.println(player.getWidth());
+		//player.enableGravity(false);
 		Planet planet = new Planet("planet1", Shape.CIRC, 64, 64, planetStats, 32, 32);
-		System.out.println(player.getWidth());
 		//planet.moveTo(width/2-32, height/2-32);
-		System.out.println(player.getMass());
 		map = new Map(mapWidth, mapHeight, player);
 		player.moveTo(0, 0);
 		map.addEntity(planet);
@@ -147,6 +181,32 @@ public class Ordinance {
 	 * Poll input from devices
 	 */
 	private void pollInput() {
+		if (gamepad.isConnected()) {
+			if (gamepad.poll()) {
+				float posLX = gamepad.axes.get(XInputAxis.LEFT_THUMBSTICK_X);
+				float posLY = gamepad.axes.get(XInputAxis.LEFT_THUMBSTICK_Y);
+				float posRX = gamepad.axes.get(XInputAxis.RIGHT_THUMBSTICK_X);
+				float posRY = gamepad.axes.get(XInputAxis.RIGHT_THUMBSTICK_Y);
+				if (Math.abs(posLX) > THRESHOLD_STICK_ROT || Math.abs(posLY) > THRESHOLD_STICK_ROT) {
+					System.out.println(posLX + ", " + posLY);
+					player.accel(posLX, -posLY, Math.abs(posLX), Math.abs(posLY), delta);
+				}
+				if (Math.abs(posRX) > THRESHOLD_STICK_ROT || Math.abs(posRY) > THRESHOLD_STICK_ROT) {
+					System.out.println(posRX + ", " + posRY);
+					player.pointTo(player.getX()+posRX, player.getY()+posRY);
+				}
+				/*if (gamepad.buttons.back) {
+					Display.destroy();
+					init();
+				}*/
+				
+				if (gamepad.buttonsDelta.isPressed(XInputButton.BACK)) {
+					Display.destroy();
+					init();
+				}
+			}
+		}
+		
 		mouseX = Mouse.getX();
 		mouseY = height-Mouse.getY()-1;
 
