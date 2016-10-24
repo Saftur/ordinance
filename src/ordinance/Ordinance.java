@@ -15,12 +15,10 @@ import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 import org.newdawn.slick.util.ResourceLoader;
 
-import ordinance.entity.Entity;
 import ordinance.entity.Entity.Shape;
 import ordinance.entity.Planet;
 import ordinance.entity.Player;
 import ordinance.entity.Ship;
-import ordinance.screen.Screen;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -32,11 +30,11 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class Ordinance {
 	public static Ordinance app;
-	private static final double THRESHOLD_STICK_ROT = 0.2;
+	private static final double STICK_DEADZONE = 0.2;
 	
-	public Screen screen;
 	public Map map;
 	private Ship player;
+	private Controls controls;
 	private Gamepad gamepad = null;
 	//private XInputDevice gamepad = null;
 	//private XInputComponents gamepadComps = null;
@@ -84,40 +82,66 @@ public class Ordinance {
 			e.printStackTrace();
 		}*/
 		
-		if (XInputDevice.isAvailable()) {
-			System.out.println("XInput 1.3 is available on this platform.");
-		}
-		
 		if (XInputDevice14.isAvailable()) {
 			System.out.println("XInput 1.4 is available on this platform.");
+			
+			try {
+				XInputDevice14[] devices = XInputDevice14.getAllDevices();
+				gamepad = new Gamepad(devices[0]);
+				XInputDeviceListener listener = new SimpleXInputDeviceListener() {
+					@Override
+					public void connected() {
+						System.out.println("Connected");
+					}
+					@Override
+					public void disconnected() {
+						System.out.println("Disconnected");
+					}
+					@Override
+					public void buttonChanged(final XInputButton button, final boolean pressed) {
+						//System.out.println("Button");
+					}
+				};
+				gamepad.addListener(listener);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			if (gamepad.isConnected())
+				System.out.println("Controller connected");
+		} else if (XInputDevice.isAvailable()) {
+			System.out.println("XInput 1.3 is available on this platform.");
+			
+			try {
+				XInputDevice[] devices = XInputDevice.getAllDevices();
+				gamepad = new Gamepad(devices[0]);
+				XInputDeviceListener listener = new SimpleXInputDeviceListener() {
+					@Override
+					public void connected() {
+						System.out.println("Connected");
+					}
+					@Override
+					public void disconnected() {
+						System.out.println("Disconnected");
+					}
+					@Override
+					public void buttonChanged(final XInputButton button, final boolean pressed) {
+						//System.out.println("Button");
+					}
+				};
+				gamepad.addListener(listener);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			if (gamepad.isConnected())
+				System.out.println("Controller connected");
 		}
 		
+		final int keys[] =
+			{Keyboard.KEY_A, Keyboard.KEY_D, Keyboard.KEY_W, Keyboard.KEY_S,
+			 Keyboard.KEY_R, Keyboard.KEY_T, Keyboard.KEY_ESCAPE};
 		try {
-			XInputDevice[] devices = XInputDevice.getAllDevices();
-			
-			System.out.println(devices[0].isConnected());
-			
-			gamepad = new Gamepad(devices[0]);
-			
-			XInputDeviceListener listener = new SimpleXInputDeviceListener() {
-				@Override
-				public void connected() {
-					System.out.println("Connected");
-				}
-				@Override
-				public void disconnected() {
-					System.out.println("Disconnected");
-				}
-				@Override
-				public void buttonChanged(final XInputButton button, final boolean pressed) {
-					//System.out.println("Button");
-				}
-			};
-			
-			gamepad.addListener(listener);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+			controls = new Controls(keys);
+		} catch (IllegalArgumentException e) {}
 		
 		glEnable(GL_TEXTURE_2D);
 		
@@ -138,7 +162,7 @@ public class Ordinance {
 		float playerStats[] = {    6f,    .4f,    .3f, 100};
 		float planetStats[] = {    6f,    .4f,    .3f};
 		player = new Player("ship", "../player", Shape.CIRC, 64, 64, playerStats, 32, 32);
-		//player.enableGravity(false);
+		player.enableGravity(false);
 		Planet planet = new Planet("planet1", Shape.CIRC, 64, 64, planetStats, 32, 32);
 		//planet.moveTo(width/2-32, height/2-32);
 		map = new Map(mapWidth, mapHeight, player);
@@ -187,44 +211,46 @@ public class Ordinance {
 				float posLY = gamepad.axes.get(XInputAxis.LEFT_THUMBSTICK_Y);
 				float posRX = gamepad.axes.get(XInputAxis.RIGHT_THUMBSTICK_X);
 				float posRY = gamepad.axes.get(XInputAxis.RIGHT_THUMBSTICK_Y);
-				if (Math.abs(posLX) > THRESHOLD_STICK_ROT || Math.abs(posLY) > THRESHOLD_STICK_ROT) {
-					System.out.println(posLX + ", " + posLY);
-					player.accel(posLX, -posLY, Math.abs(posLX), Math.abs(posLY), delta);
+				if (Math.abs(posLX) > STICK_DEADZONE || Math.abs(posLY) > STICK_DEADZONE) {
+					//System.out.println(posLX + ", " + posLY);
+					//player.accel(posLX, -posLY, Math.abs(posLX), Math.abs(posLY), delta);
+					float scl = (float)Math.sqrt(posLX*posLX+posLY*posLY);
+					float dir = player.angleTo(player.x+posLX, player.y+-posLY)+player.rot;
+					player.accelDir(scl, dir, scl, delta);
 				}
-				if (Math.abs(posRX) > THRESHOLD_STICK_ROT || Math.abs(posRY) > THRESHOLD_STICK_ROT) {
-					System.out.println(posRX + ", " + posRY);
-					player.pointTo(player.getX()+posRX, player.getY()+posRY);
+				if (Math.abs(posRX) > STICK_DEADZONE || Math.abs(posRY) > STICK_DEADZONE) {
+					//System.out.println(posRX + ", " + posRY);
+					player.pointTo(player.x+posRX, player.y+posRY);
 				}
-				/*if (gamepad.buttons.back) {
-					Display.destroy();
-					init();
-				}*/
 				
-				if (gamepad.buttonsDelta.isPressed(XInputButton.BACK)) {
+				if (gamepad.buttonsDelta.isPressed(XInputButton.START)) {
 					Display.destroy();
 					init();
+				}
+				if (gamepad.buttonsDelta.isPressed(XInputButton.BACK)) {
+					player.toggleGravity();
 				}
 			}
 		}
 		
 		mouseX = Mouse.getX();
 		mouseY = height-Mouse.getY()-1;
-
-		if (Keyboard.isKeyDown(Keyboard.KEY_LEFT)) player.accel(-1, 0, delta);
-		if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) player.accel(1, 0, delta);
-		if (Keyboard.isKeyDown(Keyboard.KEY_UP)) player.accel(0, -1, delta);
-		if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)) player.accel(0, 1, delta);
+		
+		if (Keyboard.isKeyDown(controls.LEFT)) player.accel(-1, 0, delta);
+		if (Keyboard.isKeyDown(controls.RIGHT)) player.accel(1, 0, delta);
+		if (Keyboard.isKeyDown(controls.UP)) player.accel(0, -1, delta);
+		if (Keyboard.isKeyDown(controls.DOWN)) player.accel(0, 1, delta);
 		
 		while (Keyboard.next()) {
 			if (Keyboard.getEventKeyState()) {
-				switch (Keyboard.getEventKey()) {
-				case Keyboard.KEY_R: //ease of testing, can be taken out later
+				final int key = Keyboard.getEventKey();
+				if (key == controls.RESTART) {
 					Display.destroy();
 					init();
-					break;
-				case Keyboard.KEY_ESCAPE:
+				} else if (key == controls.GRAVITY) {
+					player.toggleGravity();
+				} else if (key == controls.QUIT)
 					System.exit(0);
-				}
 			}
 		}
 	}

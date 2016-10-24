@@ -93,6 +93,12 @@ public class Map {
 							} else if (ent2 instanceof Planet) {
 								if (ent1.collide(ent2)) {
 									//System.out.println("Collide");
+									float rot1 = ent2.angleTo(ent1)+ent2.rot;
+									//float rot2 = rot1 >= 180 ? rot1-180 : rot1+180;
+									while (ent1.collide(ent2)) {
+										ent1.moveDir(.1f, rot1);
+									}
+									//ent1.accelDir(.1f, rot1, delta);
 									//return 1;
 								}
 							}
@@ -104,6 +110,12 @@ public class Map {
 							} else if (ent2 instanceof Ship) {
 								if (ent1.collide(ent2)) {
 									//System.out.println("Collide");
+									float rot1 = ent1.angleTo(ent2)+ent1.rot;
+									//float rot2 = rot1 >= 180 ? rot1-180 : rot1+180;
+									while (ent1.collide(ent2)) {
+										ent2.moveDir(.1f, rot1);
+									}
+									//ent2.accelDir(.1f, rot1, delta);
 									//return 1;
 								}
 							}

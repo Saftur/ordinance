@@ -19,7 +19,7 @@ public abstract class Entity {
 	protected Map map;
 	
 	protected int width, height;
-	protected float x=0, y=0;
+	public float x=0, y=0;
 	protected int cx=0, cy=0;
 	protected float xspd=0, yspd=0;
 	public float rot=0;
@@ -150,10 +150,21 @@ public abstract class Entity {
 					yspd = (-yspd < sDelta*spddec) ? 0 : yspd+sDelta*spddec;
 			}
 		}
-		if (xspd>maxspd) xspd = maxspd;
-		if (xspd<-maxspd) xspd = -maxspd;
-		if (yspd>maxspd) yspd = maxspd;
-		if (yspd<-maxspd) yspd = -maxspd;
+		//if (xspd>maxspd) xspd = maxspd;
+		//if (xspd<-maxspd) xspd = -maxspd;
+		//if (yspd>maxspd) yspd = maxspd;
+		//if (yspd<-maxspd) yspd = -maxspd;
+		
+		int negXSpd = xspd >= 0 ? 1 : -1;
+		int negYSpd = yspd >= 0 ? 1 : -1;
+		float spd = (float)Math.sqrt(xspd*xspd+yspd*yspd);
+		if (spd > maxspd) {
+			float dir = angleTo(x+xspd, y+yspd)+rot;
+			SpeedDir.setSpdDir(maxspd, dir);
+			xspd = SpeedDir.getXspd();
+			yspd = SpeedDir.getYspd();
+		}
+		
 		x+=sDelta*xspd;
 		y+=sDelta*yspd;
 		lxspd = xspd; lyspd = yspd;
@@ -265,6 +276,46 @@ public abstract class Entity {
 		accel(SpeedDir.getXspd(), SpeedDir.getYspd(), delta);
 	}
 	
+	public void accelDir(float scl, float dir, float maxspd, int delta) {
+		/*float spd = (float)Math.sqrt(xspd*xspd+yspd*yspd);
+		float dspd = (float)delta/1000*scl*spdinc;
+		maxspd *= this.maxspd;
+		if (dspd < 0) {
+			dspd = -dspd;
+			maxspd = -maxspd;
+		}
+
+		if (spd < maxspd) {
+			spd+=dspd;
+		}
+		if (spd > maxspd) {
+			spd-=dspd;
+			if (spd < maxspd)
+				spd = maxspd;
+		}
+		
+		SpeedDir.setSpdDir(spd, dir);
+		xspd = SpeedDir.getXspd();
+		yspd = SpeedDir.getYspd();*/
+		maxspd *= this.maxspd;
+		float spd = (float)Math.sqrt(xspd*xspd+yspd*yspd);
+		float dspd = (float)delta/1000*scl*spdinc;
+		//System.out.println(xspd+", "+yspd);
+		if (spd < maxspd)
+			accelDir(scl, dir, delta);
+		//System.out.println(xspd+", "+yspd);
+		dir = angleTo(x+xspd, y+yspd)+rot;
+		//System.out.println(dir);
+		spd = (float)Math.sqrt(xspd*xspd+yspd*yspd);
+		if (spd > maxspd)
+			spd -= dspd;
+		SpeedDir.setSpdDir(spd, dir);
+		xspd = SpeedDir.getXspd();
+		yspd = SpeedDir.getYspd();
+		System.out.println(xspd+", "+yspd);
+		System.out.println();
+	}
+	
 	/**
 	 * Point to x, y
 	 * @param x	 x coordinate
@@ -351,6 +402,10 @@ public abstract class Entity {
 		gravity = enable;
 	}
 	
+	public void toggleGravity() {
+		enableGravity(!gravity);
+	}
+	
 	public void render() {
 		Ordinance.renderSprite(sprite, x-cx, y-cy, getWidth(), getHeight());
 	}
@@ -399,22 +454,6 @@ public abstract class Entity {
 		if (map != null && map == other.map) {
 			return angleTo(other.x, other.y);
 		} else return 0;
-	}
-	
-	/**
-	 * Get entity x position
-	 * @return x position
-	 */
-	public float getX() {
-		return x;
-	}
-	
-	/**
-	 * Get entity y position
-	 * @return y position
-	 */
-	public float getY() {
-		return y;
 	}
 	
 	/**
