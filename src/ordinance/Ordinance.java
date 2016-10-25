@@ -161,14 +161,13 @@ public class Ordinance {
 		//					  {maxspd, spdinc, spddec,  hp}
 		float playerStats[] = {    6f,    .4f,    .3f, 100};
 		float planetStats[] = {    6f,    .4f,    .3f};
-		player = new Player("ship", "../player", Shape.CIRC, 64, 64, playerStats, 32, 32);
+		player = new Player("ship", "player", Shape.CIRC, 64, 64, playerStats, 32, 32);
 		player.enableGravity(false);
 		Planet planet = new Planet("planet1", Shape.CIRC, 64, 64, planetStats, 32, 32);
 		//planet.moveTo(width/2-32, height/2-32);
 		map = new Map(mapWidth, mapHeight, player);
 		player.moveTo(0, 0);
 		map.addEntity(planet);
-		//map.addEntity(player);
 	}
 	
 	/**
