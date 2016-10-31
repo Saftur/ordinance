@@ -57,6 +57,7 @@ public class Bullet extends Entity {
 		SpeedDir.setSpdDir(spd, dir);
 		cxspd = SpeedDir.getXspd();
 		cyspd = SpeedDir.getYspd();
+		System.out.println(cxspd+", "+cyspd);
 		return this;
 	}
 	

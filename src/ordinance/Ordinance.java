@@ -15,10 +15,12 @@ import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 import org.newdawn.slick.util.ResourceLoader;
 
+import ordinance.entity.Bullet;
 import ordinance.entity.Entity.Shape;
 import ordinance.entity.Planet;
 import ordinance.entity.Player;
 import ordinance.entity.Ship;
+import ordinance.entity.Weapon;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -32,6 +34,8 @@ public class Ordinance {
 	public static Ordinance app;
 	private static final double STICK_DEADZONE = 0.2;
 	
+	static public int mouseX=0, mouseY=0;
+	
 	public Map map;
 	private Ship player;
 	private Controls controls;
@@ -42,7 +46,6 @@ public class Ordinance {
 	
 	public int width=1600, height=1200;
 	public int mapWidth=1600, mapHeight=1200;
-	public int mouseX=0, mouseY=0;
 	private long lastFrameTime;
 	private long nextFPSTime;
 	private int fpsCount;
@@ -161,9 +164,15 @@ public class Ordinance {
 		//					  {maxspd, spdinc, spddec,  hp}
 		float playerStats[] = {    6f,    .4f,    .3f, 100};
 		float planetStats[] = {    6f,    .4f,    .3f};
+		
+		float bulletStats[] = {   10f,    120};
+		float weaponStats[] = {   60f,    60f,     2f};
 		player = new Player("ship", "player", Shape.CIRC, 64, 64, playerStats, 32, 32);
 		player.enableGravity(false);
 		Planet planet = new Planet("planet1", Shape.CIRC, 64, 64, planetStats, 32, 32);
+		Bullet bullet = new Bullet("bullet", Shape.RECT, 16, 8, bulletStats, 8, 4);
+		Weapon weapon = new Weapon("laser", Shape.RECT, 32, 16, bullet, weaponStats, -32, 8);
+		player.getWeapon(weapon);
 		//planet.moveTo(width/2-32, height/2-32);
 		map = new Map(mapWidth, mapHeight, player);
 		player.moveTo(0, 0);
@@ -196,6 +205,7 @@ public class Ordinance {
 	 */
 	private void update() {
 		pollInput();
+		//System.out.println(player.rot);
 		//player.accelDir(1, 45, delta);
 		map.update(delta);
 	}
@@ -214,42 +224,46 @@ public class Ordinance {
 					//System.out.println(posLX + ", " + posLY);
 					//player.accel(posLX, -posLY, Math.abs(posLX), Math.abs(posLY), delta);
 					float scl = (float)Math.sqrt(posLX*posLX+posLY*posLY);
-					float dir = player.angleTo(player.x+posLX, player.y+-posLY)+player.rot;
+					float dir = player.angleTo(player.x+posLX, player.y-posLY)+player.rot;
 					player.accelDir(scl, dir, scl, delta);
 				}
 				if (Math.abs(posRX) > STICK_DEADZONE || Math.abs(posRY) > STICK_DEADZONE) {
 					//System.out.println(posRX + ", " + posRY);
-					player.pointTo(player.x+posRX, player.y+posRY);
+					player.pointTo(player.x+posRX, player.y-posRY);
 				}
 				
-				if (gamepad.buttonsDelta.isPressed(XInputButton.START)) {
+				if (gamepad.buttonsDelta.isPressed(XInputButton.LEFT_THUMBSTICK)) {
 					Display.destroy();
 					init();
 				}
 				if (gamepad.buttonsDelta.isPressed(XInputButton.BACK)) {
 					player.toggleGravity();
 				}
-			}
-		}
-		
-		mouseX = Mouse.getX();
-		mouseY = height-Mouse.getY()-1;
-		
-		if (Keyboard.isKeyDown(controls.LEFT)) player.accel(-1, 0, delta);
-		if (Keyboard.isKeyDown(controls.RIGHT)) player.accel(1, 0, delta);
-		if (Keyboard.isKeyDown(controls.UP)) player.accel(0, -1, delta);
-		if (Keyboard.isKeyDown(controls.DOWN)) player.accel(0, 1, delta);
-		
-		while (Keyboard.next()) {
-			if (Keyboard.getEventKeyState()) {
-				final int key = Keyboard.getEventKey();
-				if (key == controls.RESTART) {
-					Display.destroy();
-					init();
-				} else if (key == controls.GRAVITY) {
-					player.toggleGravity();
-				} else if (key == controls.QUIT)
+				if (gamepad.buttonsDelta.isPressed(XInputButton.START)) {
 					System.exit(0);
+				}
+			}
+		} else {
+			mouseX = Mouse.getX();
+			mouseY = height-Mouse.getY()-1;
+			player.pointTo(Ordinance.mouseX, Ordinance.mouseY);
+			if (Keyboard.isKeyDown(controls.LEFT)) player.accel(-1, 0, delta);
+			if (Keyboard.isKeyDown(controls.RIGHT)) player.accel(1, 0, delta);
+			if (Keyboard.isKeyDown(controls.UP)) player.accel(0, -1, delta);
+			if (Keyboard.isKeyDown(controls.DOWN)) player.accel(0, 1, delta);
+			if (Mouse.isButtonDown(0)) player.shoot();
+			
+			while (Keyboard.next()) {
+				if (Keyboard.getEventKeyState()) {
+					final int key = Keyboard.getEventKey();
+					if (key == controls.RESTART) {
+						Display.destroy();
+						init();
+					} else if (key == controls.GRAVITY) {
+						player.toggleGravity();
+					} else if (key == controls.QUIT)
+						System.exit(0);
+				}
 			}
 		}
 	}
@@ -378,8 +392,8 @@ public class Ordinance {
 		return texture;
 	}
 	
-	public static void renderSprite(Texture sprite, float x, float y) {
-		renderSprite(sprite, x, y, sprite.getTextureWidth(), sprite.getTextureHeight());
+	public static void renderSprite(Texture sprite, float x, float y, float rot, float cx, float cy) {
+		renderSprite(sprite, x, y, cx, cy, rot, sprite.getTextureWidth(), sprite.getTextureHeight());
 	}
 	
 	/**
@@ -390,17 +404,40 @@ public class Ordinance {
 	 * @param width	  sprite width
 	 * @param height  sprite height
 	 */
-	public static void renderSprite(Texture sprite, float x, float y, float width, float height) {
+	public static void renderSprite(Texture sprite, float x, float y, float cx, float cy, float rot, float width, float height) {
+		rot *= Math.PI/180;
+		//System.out.println(rot);
+		float sx = (float)(x-cx*Math.cos(rot)), sy = (float)(y-cx*Math.sin(rot));
+		//float slope;
+		float x1 = x-cx, x2 = x-cx+width, x3 = x-cx+width, x4 = x-cx;
+		float y1 = y-cy, y2 = y-cy, y3 = y-cy+height, y4 = y-cy+height;
+		if (rot == 180) {
+			x1 = -x1; y1 = -y1;
+			x2 = -x2; y2 = -y2;
+			x3 = -x3; y3 = -y3;
+			x4 = -x4; y4 = -y4;
+		} else if (rot != 0) {
+			//slope = (float)(-1/Math.tan(rot));
+			x1 = (float)(sx+cy*Math.sin(rot));
+			y1 = (float)(sy-cy*Math.cos(rot));
+			x2 = (float)(x1+width*Math.cos(rot));
+			y2 = (float)(y1+width*Math.sin(rot));
+			x3 = (float)(x2-height*Math.sin(rot));
+			y3 = (float)(y2+height*Math.cos(rot));
+			x4 = (float)(x3-width*Math.cos(rot));
+			y4 = (float)(y3-width*Math.sin(rot));
+		}
+		
 		glBindTexture(GL_TEXTURE_2D, sprite.getTextureID());
 		glBegin(GL_QUADS); {
 			glTexCoord2f(0,0);
-			glVertex2f(x,y);
+			glVertex2f(x1,y1);
 			glTexCoord2f(1,0);
-			glVertex2f(x+width,y);
+			glVertex2f(x2,y2);
 			glTexCoord2f(1,1);
-			glVertex2f(x+width,y+height);
+			glVertex2f(x3,y3);
 			glTexCoord2f(0,1);
-			glVertex2f(x,y+height);
+			glVertex2f(x4,y4);
 		} glEnd();
 	}
 	

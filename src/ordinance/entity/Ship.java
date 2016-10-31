@@ -3,6 +3,7 @@ package ordinance.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.lwjgl.input.Mouse;
 import org.newdawn.slick.opengl.Texture;
 
 import ordinance.Map;
@@ -54,7 +55,16 @@ public class Ship extends Entity {
 	 * @param delta delta time in ms
 	 */
 	public boolean update(int delta) {
-		return super.update(delta);
+		boolean result = super.update(delta);
+		if (weapons.size() > 0)
+			weapons.get(wpn).update();
+		return result;
+	}
+	
+	public void render() {
+		super.render();
+		if (weapons.size() > 0)
+			weapons.get(wpn).render();
 	}
 	
 	public void moveTo(float x, float y) {
@@ -106,6 +116,7 @@ public class Ship extends Entity {
 	}
 	
 	public void shoot() {
+		//System.out.println("Shoot");
 		if (weapons.size() > 0)
 			weapons.get(wpn).shoot();
 	}

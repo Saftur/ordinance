@@ -155,8 +155,6 @@ public abstract class Entity {
 		//if (yspd>maxspd) yspd = maxspd;
 		//if (yspd<-maxspd) yspd = -maxspd;
 		
-		int negXSpd = xspd >= 0 ? 1 : -1;
-		int negYSpd = yspd >= 0 ? 1 : -1;
 		float spd = (float)Math.sqrt(xspd*xspd+yspd*yspd);
 		if (spd > maxspd) {
 			float dir = angleTo(x+xspd, y+yspd)+rot;
@@ -407,7 +405,7 @@ public abstract class Entity {
 	}
 	
 	public void render() {
-		Ordinance.renderSprite(sprite, x-cx, y-cy, getWidth(), getHeight());
+		Ordinance.renderSprite(sprite, x, y, cx, cy, rot, getWidth(), getHeight());
 	}
 	
 	
