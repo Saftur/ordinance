@@ -28,7 +28,7 @@ public class Bullet extends Entity {
 		} else {
 			dmg = 0;
 		}
-		enableGravity(true);
+		//enableGravity(true);
 	}
 
 	/**
@@ -57,7 +57,8 @@ public class Bullet extends Entity {
 		SpeedDir.setSpdDir(spd, dir);
 		cxspd = SpeedDir.getXspd();
 		cyspd = SpeedDir.getYspd();
-		System.out.println(cxspd+", "+cyspd);
+		xspd = 0;
+		yspd = 0;
 		return this;
 	}
 	

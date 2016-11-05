@@ -43,11 +43,11 @@ public class Player extends Ship {
 	
 	public void takeDamage(float dmg, boolean use_invuln) {
 		if (use_invuln) {
-			if (invuln >= invper)
+			/*if (invuln >= invper)
 				takeDamage(dmg);
-			else if (invuln == 0) {
+			else */if (invuln == 0) {
 				takeDamage(dmg);
-				invuln = invper+2;
+				invuln = invper;
 				sprite = norm_sprite;
 			}
 		} else {

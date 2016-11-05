@@ -168,6 +168,7 @@ public abstract class Entity {
 		lxspd = xspd; lyspd = yspd;
 		
 		if (gravity) {
+			if (this instanceof Bullet) System.out.println("Bullet gravity");
 			for (Entity ent : map.ents) {
 				if (ent != this) {
 					if (ent instanceof Planet) {
@@ -310,8 +311,8 @@ public abstract class Entity {
 		SpeedDir.setSpdDir(spd, dir);
 		xspd = SpeedDir.getXspd();
 		yspd = SpeedDir.getYspd();
-		System.out.println(xspd+", "+yspd);
-		System.out.println();
+		//System.out.println(xspd+", "+yspd);
+		//System.out.println();
 	}
 	
 	/**

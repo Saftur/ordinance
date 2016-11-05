@@ -16,6 +16,7 @@ import org.newdawn.slick.opengl.TextureLoader;
 import org.newdawn.slick.util.ResourceLoader;
 
 import ordinance.entity.Bullet;
+import ordinance.entity.Enemy;
 import ordinance.entity.Entity.Shape;
 import ordinance.entity.Planet;
 import ordinance.entity.Player;
@@ -32,12 +33,13 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class Ordinance {
 	public static Ordinance app;
-	private static final double STICK_DEADZONE = 0.2;
+	private static final float STICK_DEADZONE = 0.2f;
+	private static final float TRIGGER_PRESSED = 0.5f;
 	
 	static public int mouseX=0, mouseY=0;
 	
 	public Map map;
-	private Ship player;
+	public Ship player;
 	private Controls controls;
 	private Gamepad gamepad = null;
 	//private XInputDevice gamepad = null;
@@ -161,22 +163,32 @@ public class Ordinance {
 		glOrtho(0, width, height, 0, 1, -1);
 		glMatrixMode(GL_MODELVIEW);
 		
-		//					  {maxspd, spdinc, spddec,  hp}
-		float playerStats[] = {    6f,    .4f,    .3f, 100};
-		float planetStats[] = {    6f,    .4f,    .3f};
+		//					   {maxspd, spdinc, spddec,    hp}
+		float playerStats[]  = {    6f,    .4f,    .3f,   100,  60};
+		float planetStats[]  = {    6f,    .4f,    .3f};
+		float enemy1Stats[]  = {    5f,    .4f,    .3f,   100,   1,   1};
+		float enemy2Stats[]  = {    0f,     0f,     0f,   100,   1,   0};
 		
-		float bulletStats[] = {   10f,    120};
-		float weaponStats[] = {   60f,    60f,     2f};
+		float bulletStats[]  = {   10f,   120f};
+		//					   {shtspd,  shdel, shtnum}
+		float weapon1Stats[] = {   60f,    60f,   100f};
+		float weapon2Stats[] = {   20f,    30f,   100f};
 		player = new Player("ship", "player", Shape.CIRC, 64, 64, playerStats, 32, 32);
 		player.enableGravity(false);
-		Planet planet = new Planet("planet1", Shape.CIRC, 64, 64, planetStats, 32, 32);
-		Bullet bullet = new Bullet("bullet", Shape.RECT, 16, 8, bulletStats, 8, 4);
-		Weapon weapon = new Weapon("laser", Shape.RECT, 32, 16, bullet, weaponStats, -32, 8);
-		player.getWeapon(weapon);
+		Planet planet  = new Planet("planet1", Shape.CIRC, 64, 64, planetStats, 32, 32);
+		Bullet bullet  = new Bullet("laser",   Shape.RECT, 32, 16, bulletStats, 16, 8);
+		Weapon weapon1 = new Weapon("bullet",  Shape.RECT, 32, 16, bullet, weapon1Stats, -32, 8);
+		Weapon weapon2 = new Weapon("bullet",  Shape.RECT, 32, 16, bullet.copy(), weapon2Stats, -32, 8);
+		Enemy enemy1   =  new Enemy("player",  Shape.CIRC, 64, 64, enemy1Stats, 32, 32);
+		Enemy enemy2   =  new Enemy("player",  Shape.CIRC, 64, 64, enemy2Stats, 32, 32);
+		player.getWeapon(weapon1);
+		enemy2.getWeapon(weapon2);
 		//planet.moveTo(width/2-32, height/2-32);
 		map = new Map(mapWidth, mapHeight, player);
-		player.moveTo(0, 0);
+		player.moveTo(32, 32);
 		map.addEntity(planet);
+		map.addEntity(enemy1, mapWidth-32, mapHeight-32);
+		map.addEntity(enemy2, mapWidth-32, 32);
 	}
 	
 	/**
@@ -206,8 +218,13 @@ public class Ordinance {
 	private void update() {
 		pollInput();
 		//System.out.println(player.rot);
+		System.out.println(player.hp);
 		//player.accelDir(1, 45, delta);
 		map.update(delta);
+		if(player.hp <= 0){
+			Display.destroy();
+			init();
+		}
 	}
 	
 	/**
@@ -220,6 +237,8 @@ public class Ordinance {
 				float posLY = gamepad.axes.get(XInputAxis.LEFT_THUMBSTICK_Y);
 				float posRX = gamepad.axes.get(XInputAxis.RIGHT_THUMBSTICK_X);
 				float posRY = gamepad.axes.get(XInputAxis.RIGHT_THUMBSTICK_Y);
+				//float posLT = gamepad.axes.get(XInputAxis.LEFT_TRIGGER);
+				float posRT = gamepad.axes.get(XInputAxis.RIGHT_TRIGGER);
 				if (Math.abs(posLX) > STICK_DEADZONE || Math.abs(posLY) > STICK_DEADZONE) {
 					//System.out.println(posLX + ", " + posLY);
 					//player.accel(posLX, -posLY, Math.abs(posLX), Math.abs(posLY), delta);
@@ -230,6 +249,9 @@ public class Ordinance {
 				if (Math.abs(posRX) > STICK_DEADZONE || Math.abs(posRY) > STICK_DEADZONE) {
 					//System.out.println(posRX + ", " + posRY);
 					player.pointTo(player.x+posRX, player.y-posRY);
+				}
+				if (posRT > TRIGGER_PRESSED) {
+					player.shoot();
 				}
 				
 				if (gamepad.buttonsDelta.isPressed(XInputButton.LEFT_THUMBSTICK)) {

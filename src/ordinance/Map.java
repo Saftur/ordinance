@@ -75,7 +75,10 @@ public class Map {
 							if (ent2 instanceof Bullet) {
 								if (ent1 instanceof Player == !((Bullet)ent2).fromPlayer()) {
 									if (ent1.collide(ent2)) {
-										((Ship)ent1).takeDamage(((Bullet)ent2).dmg);
+										if (ent1 instanceof Enemy)
+											((Enemy)ent1).takeDamage(((Bullet)ent2).dmg);
+										else
+											((Player)ent1).takeDamage(((Bullet)ent2).dmg, true);
 										removeEntity(ent2);
 									}
 								}
@@ -87,8 +90,11 @@ public class Map {
 										ent1.moveDir(.1f, rot1);
 										ent2.moveDir(.1f, rot2);
 									}
+									ent1.accelDir(.1f, rot1, delta);
+									ent2.accelDir(.1f, rot2, delta);
 									if (ent1 instanceof Player && ent2 instanceof Enemy)
 										((Player)ent1).takeDamage(((Enemy)ent2).dmg, true);
+									collide = true;
 								}
 							} else if (ent2 instanceof Planet) {
 								if (ent1.collide(ent2)) {
@@ -99,7 +105,7 @@ public class Map {
 										ent1.moveDir(.1f, rot1);
 									}
 									//ent1.accelDir(.1f, rot1, delta);
-									//return 1;
+									collide = true;
 								}
 							}
 						} else if (ent1 instanceof Planet) {
@@ -116,7 +122,7 @@ public class Map {
 										ent2.moveDir(.1f, rot1);
 									}
 									//ent2.accelDir(.1f, rot1, delta);
-									//return 1;
+									collide = true;
 								}
 							}
 						}
@@ -125,6 +131,8 @@ public class Map {
 				}
 				if (!ent1.mapEdges())
 					i++;
+				//else
+					//collide = true;
 			}
 		} while (collide);
 		

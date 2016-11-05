@@ -82,4 +82,8 @@ public class Weapon extends Entity {
 		bullets.remove(bullet);
 	}
 	
+	public Weapon copy() {
+		float stats[] = {shtspd, shtdel, shtnum};
+		return new Weapon(sprite, shape, width, height, bullet.copy(), stats, cx, cy);
+	}
 }
